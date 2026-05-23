@@ -79,9 +79,11 @@ Monthly posting volume, upcoming deadlines, breakdown by portal and state.
 
 Designed mobile-first. Cards on small screens, table on desktop. Filter drawer, sticky header, thumb-friendly controls.
 
-![Mobile Dashboard](docs/screenshots/07_mobile_dashboard.png)
-
-![Mobile Cards](docs/screenshots/08_mobile_contracts_cards.png)
+<p>
+  <img src="docs/screenshots/07_mobile_dashboard.png" width="320" alt="Mobile Dashboard" />
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/08_mobile_contracts_cards.png" width="320" alt="Mobile Cards" />
+</p>
 
 ---
 
