@@ -1,0 +1,39 @@
+{
+  "noticeId": "abc123def456ghi789",
+  "title": "Software Development and Maintenance Services",
+  "solicitationNumber": "W52P1J-25-R-0001",
+  "fullParentPathName": "Department of Defense.Department of the Army.Army Contracting Command",
+  "fullParentPathCode": "DOD.DA.ACC",
+  "postedDate": "2025-11-01",
+  "type": "Solicitation",
+  "baseType": "Solicitation",
+  "active": "Yes",
+  "responseDeadLine": "2025-11-30T17:00:00-05:00",
+  "naicsCode": "541512",
+  "organizationType": "OFFICE",
+  "uiLink": "https://sam.gov/opp/abc123def456ghi789/view",
+  "additionalInfoLink": "https://sam.gov/opp/abc123def456ghi789/additional",
+  "resourceLinks": [
+    "https://sam.gov/api/prod/opps/v3/opportunities/resources/files/sample-1/download",
+    "https://sam.gov/api/prod/opps/v3/opportunities/resources/files/sample-2/download"
+  ],
+  "placeOfPerformance": {
+    "streetAddress": "123 Main Street",
+    "city": {
+      "code": "12345",
+      "name": "Warren"
+    },
+    "state": {
+      "code": "MI",
+      "name": "Michigan"
+    },
+    "zip": "48397"
+  },
+  "pointOfContact": [
+    {
+      "type": "primary",
+      "fullName": "Jane Doe",
+      "email": "jane.doe@example.mil"
+    }
+  ]
+}

@@ -1,0 +1,174 @@
+@import "tailwindcss";
+
+/* ─── Chardi design tokens ─── */
+:root {
+  /* Warm palette */
+  --warm-50: #fffbf7;
+  --warm-200: #f7f3f2;
+  --warm-300: #e0dcda;
+  --warm-900: #1f1a17;
+  --warm-black: #1a0d0a;
+
+  /* Coral accent (UI) */
+  --coral-500: #f59e0b;
+  --coral-600: #ea580c;
+
+  /* Marketing gradient numerals (chardi.ai) */
+  --coral: #e8613c;
+  --amber: #f2994a;
+  --gold: #eec140;
+
+  /* Geometry */
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+
+  /* shadcn semantic tokens → Chardi palette */
+  --background: var(--warm-50);
+  --foreground: var(--warm-black);
+
+  --card: #ffffff;
+  --card-foreground: var(--warm-black);
+
+  --popover: #ffffff;
+  --popover-foreground: var(--warm-black);
+
+  --primary: var(--coral-500);
+  --primary-foreground: var(--warm-black);
+
+  --secondary: var(--warm-200);
+  --secondary-foreground: var(--warm-900);
+
+  --muted: var(--warm-200);
+  --muted-foreground: #6b6560;
+
+  --accent: var(--warm-200);
+  --accent-foreground: var(--warm-900);
+
+  --destructive: #b91c1c;
+  --destructive-foreground: #ffffff;
+
+  --border: var(--warm-300);
+  --input: var(--warm-300);
+  --ring: var(--coral-500);
+
+  --radius: var(--radius-lg);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-warm-50: var(--warm-50);
+  --color-warm-200: var(--warm-200);
+  --color-warm-300: var(--warm-300);
+  --color-warm-900: var(--warm-900);
+  --color-warm-black: var(--warm-black);
+  --color-coral-500: var(--coral-500);
+  --color-coral-600: var(--coral-600);
+  --color-coral: var(--coral);
+  --color-amber: var(--amber);
+  --color-gold: var(--gold);
+
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-playfair);
+
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+
+  --shadow-sm: var(--shadow-sm);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply h-full scroll-smooth;
+  }
+
+  body {
+    @apply min-h-full bg-background text-foreground font-sans antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-playfair), Georgia, serif;
+    @apply tracking-tight text-warm-black;
+  }
+}
+
+@layer utilities {
+  .shadow-card {
+    box-shadow: var(--shadow-sm);
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /**
+   * KPI / impact numerals — chardi.ai marketing:
+   * ui-serif stack + coral → amber → gold gradient text
+   */
+  .font-stat,
+  .font-stat-md,
+  .font-stat-lg {
+    font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+    font-variant-numeric: tabular-nums;
+    font-weight: 400;
+    line-height: 1;
+    background-image: linear-gradient(to right, var(--coral), var(--amber), var(--gold));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .font-stat-md {
+    font-size: 1.875rem;
+  }
+
+  .font-stat-lg {
+    font-size: 2.25rem;
+  }
+
+  @media (width >= 48rem) {
+    .font-stat-md {
+      font-size: 2.25rem;
+    }
+
+    .font-stat-lg {
+      font-size: 2.5rem;
+    }
+  }
+
+  /* Align native date inputs with other filter controls (Select, Input). */
+  .filter-date {
+    color-scheme: light;
+  }
+
+  .filter-date::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.55;
+  }
+}

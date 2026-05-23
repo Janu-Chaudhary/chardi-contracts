@@ -1,0 +1,19 @@
+---
+description: Documentation standards for submission and demo readiness
+globs: README.md,docs/**
+alwaysApply: false
+---
+
+# Documentation rules
+
+Keep docs practical and aligned with Trial Project A submission requirements:
+
+- **architecture.md** — system diagram in prose, Neon, workers, daily refresh, dedup
+- **schema.md** — tables, deterministic IDs, status enum, JSONB fields
+- **portal-coverage.md** — federal (SAM.gov) vs planned state portals
+- **ai-usage.md** — how AI assisted build/review (honest, concise)
+- **deployment.md** — env vars, run commands, production notes
+- **metrics-summary.md** — scrape counts, error rates, data volume placeholders
+- **demo-script.md** — step-by-step demo flow for reviewers
+
+Update docs when behavior changes. Avoid empty placeholders; prefer short accurate sections over long boilerplate.

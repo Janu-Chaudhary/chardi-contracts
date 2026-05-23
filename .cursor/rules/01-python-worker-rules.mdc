@@ -1,0 +1,35 @@
+---
+description: Async Python worker conventions for backend ingestion
+globs: backend/**/*.py
+alwaysApply: false
+---
+
+# Python worker rules
+
+## Async-only
+
+- Use `asyncio`, `aiohttp`, and `asyncpg` for I/O.
+- Never import `requests`, `psycopg2`, or call `time.sleep()`; use `asyncio.sleep()` for backoff.
+
+## Structure
+
+- Keep portal-specific code under `backend/workers/<portal>/` (fetcher, mapper, main).
+- Centralize DB access in `backend/core/db.py` (pool, scrape_runs, scrape_errors, upserts).
+- Use `backend/core/fingerprint.py` for all opportunity IDs.
+
+## Resilience
+
+- Retry transient HTTP failures (429, 5xx) with jittered exponential backoff.
+- Log failures to `scrape_errors` with contextual `raw_payload`.
+- Use semaphores to cap concurrency; perform backoff waits outside the semaphore when retrying.
+
+## Data mapping
+
+- Mapper tuple order must match `OPPORTUNITY_UPSERT_SQL` in `db.py`.
+- Use safe dict access; sanitize dates before timestamptz casts.
+- JSON-encode `documents` and `raw_payload` before `::jsonb` insert.
+
+## Extension
+
+- New state workers should reuse `create_pool`, `upsert_opportunities`, and `generate_deterministic_id`.
+- Do not duplicate UPSERT SQL outside `db.py`.

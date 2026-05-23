@@ -1,0 +1,42 @@
+# ── Secrets ──────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+frontend/.env.local
+
+# ── Python ───────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ── Node / Next.js ────────────────────────────────────────
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.vercel/
+frontend/tsconfig.tsbuildinfo
+frontend/next-env.d.ts
+*.tsbuildinfo
+
+# ── Debug screenshots ─────────────────────────────────────
+debug/
+
+# ── OS ───────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── IDE ──────────────────────────────────────────────────
+.vscode/settings.json
+.idea/
+
+# ── Playwright ───────────────────────────────────────────
+playwright-report/
+test-results/

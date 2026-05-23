@@ -1,0 +1,35 @@
+---
+description: Core architecture and repo constraints for Chardi.ai Project A
+alwaysApply: true
+---
+
+# Chardi.ai Trial Project A
+
+United States government contracts aggregation platform (federal + state over time).
+
+## Non-negotiable architecture
+
+- PostgreSQL on **Neon** is the source of truth; Phase 1 schema is confirmed and must be preserved.
+- `opportunities.id` is **deterministic** (SHA-256 fingerprint), never UUID or autoincrement.
+- Federal ingestion starts with **SAM.gov**; state portals reuse the same core patterns later.
+- Phase 2 workers are **async-only Python**: `aiohttp`, `asyncio`, `asyncpg` only.
+- Do **not** use `requests`, `psycopg2`, or `time.sleep()`.
+- Preserve `scrape_runs` and `scrape_errors` for observability and dead-letter logging.
+- Upsert opportunities with `ON CONFLICT (id) DO UPDATE`; keep `raw_payload` and `documents` as JSONB.
+- Retries use jittered exponential backoff; degrade gracefully (partial success runs).
+
+## Repo layout
+
+- `backend/` — workers and shared ingestion logic
+- `docs/` — architecture, schema, deployment, metrics, demo prep
+- `scripts/` — local runners and smoke tests
+- `database/migrations/` — schema documentation placeholders (Neon is live)
+
+## Priorities
+
+1. SAM.gov worker (Phase 2) — **current**
+2. State adapters (California, Texas, New York)
+3. Read API + dashboard
+4. Deployment polish
+
+Do not overengineer, introduce microservices, auth, OCR, AI summaries, or background job frameworks in this phase.
