@@ -12,7 +12,7 @@ export function AppHeader() {
         <span className="font-display text-xl font-semibold tracking-tight text-warm-black">
           Chardi
         </span>
-        <span className="hidden truncate text-xs text-muted-foreground sm:inline">
+        <span className="truncate text-xs text-muted-foreground">
           Contracts
         </span>
       </Link>
