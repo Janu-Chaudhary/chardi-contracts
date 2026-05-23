@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/contracts/status-badge";
 import type { Contract } from "@/lib/types";
 import { interactiveCardClass } from "@/lib/interaction";
-import { formatCurrency, formatDate, cn } from "@/lib/utils";
+import { formatCurrency, formatDate, cn, hasCurrencyValue } from "@/lib/utils";
 
 interface ContractCardProps {
   contract: Contract;
@@ -37,7 +37,7 @@ export function ContractCard({ contract, className }: ContractCardProps) {
             <div>
               <dt className="text-xs text-muted-foreground">Vendor</dt>
               <dd className="mt-0.5 truncate font-medium">
-                {contract.vendor ?? "—"}
+                {contract.vendor ?? "Not specified"}
               </dd>
             </div>
             <div>
@@ -45,7 +45,14 @@ export function ContractCard({ contract, className }: ContractCardProps) {
                 <DollarSign className="h-3 w-3" aria-hidden />
                 Amount
               </dt>
-              <dd className="mt-0.5 tabular-nums font-medium">
+              <dd
+                className={cn(
+                  "mt-0.5 tabular-nums",
+                  hasCurrencyValue(contract.amount)
+                    ? "font-medium"
+                    : "text-xs italic text-muted-foreground"
+                )}
+              >
                 {formatCurrency(contract.amount)}
               </dd>
             </div>

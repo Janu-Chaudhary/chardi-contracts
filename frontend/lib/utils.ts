@@ -6,12 +6,18 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCurrency(value: number | null | undefined): string {
-  if (value == null) return "—";
+  if (value == null) return "Not disclosed";
+  if (value === 0) return "Contact for details";
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
     maximumFractionDigits: 0,
   }).format(value);
+}
+
+/** Returns true when the contract has a real dollar amount to display */
+export function hasCurrencyValue(value: number | null | undefined): boolean {
+  return value != null && value > 0;
 }
 
 export function formatDate(value: string | null | undefined): string {

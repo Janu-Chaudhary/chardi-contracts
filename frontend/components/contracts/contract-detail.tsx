@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { StatusBadge } from "@/components/contracts/status-badge";
 import type { Contract } from "@/lib/types";
-import { cn, formatCurrency, formatDate } from "@/lib/utils";
+import { cn, formatCurrency, formatDate, hasCurrencyValue } from "@/lib/utils";
 
 interface ContractDetailProps {
   contract: Contract;
@@ -83,7 +83,12 @@ export function ContractDetail({ contract }: ContractDetailProps) {
               label="Amount"
               value={formatCurrency(contract.amount)}
               icon={DollarSign}
-              statValue
+              statValue={hasCurrencyValue(contract.amount)}
+              valueClassName={
+                !hasCurrencyValue(contract.amount)
+                  ? "italic text-muted-foreground"
+                  : undefined
+              }
             />
           </CardContent>
         </Card>
@@ -125,11 +130,11 @@ export function ContractDetail({ contract }: ContractDetailProps) {
             <CardContent className="pt-0">
               <dl className="grid gap-4 sm:grid-cols-2">
                 <MetaBlock label="Vendor" value={contract.vendor ?? "Not specified"} />
-                <MetaBlock label="Buyer type" value={contract.buyerType ?? "—"} />
-                <MetaBlock label="Industry" value={contract.industry ?? "—"} />
+                <MetaBlock label="Buyer type" value={contract.buyerType ?? "Not specified"} />
+                <MetaBlock label="Industry" value={contract.industry ?? "Not specified"} />
                 <MetaBlock
                   label="Solicitation #"
-                  value={contract.solicitationNumber ?? "—"}
+                  value={contract.solicitationNumber ?? "Not available"}
                 />
               </dl>
             </CardContent>
@@ -144,8 +149,8 @@ export function ContractDetail({ contract }: ContractDetailProps) {
             <CardContent className="space-y-4 pt-0">
               <dl className="space-y-4">
                 <MetaBlock label="Region" value={contract.portalRegion} />
-                <MetaBlock label="State" value={contract.state ?? "—"} />
-                <MetaBlock label="Notice type" value={contract.noticeType ?? "—"} />
+                <MetaBlock label="State" value={contract.state ?? "Not specified"} />
+                <MetaBlock label="Notice type" value={contract.noticeType ?? "Not specified"} />
                 <MetaBlock
                   label="Record ID"
                   value={contract.id}

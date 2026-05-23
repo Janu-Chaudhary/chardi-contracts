@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { StatusBadge } from "@/components/contracts/status-badge";
 import type { Contract } from "@/lib/types";
-import { cn, formatCurrency, formatDate } from "@/lib/utils";
+import { cn, formatCurrency, formatDate, hasCurrencyValue } from "@/lib/utils";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -129,7 +129,14 @@ export function ContractsTable({
                 </p>
               )}
             </TableCell>
-            <TableCell className="whitespace-nowrap text-right tabular-nums font-medium">
+            <TableCell
+              className={cn(
+                "whitespace-nowrap text-right tabular-nums",
+                hasCurrencyValue(contract.amount)
+                  ? "font-medium"
+                  : "text-xs italic text-muted-foreground"
+              )}
+            >
               {formatCurrency(contract.amount)}
             </TableCell>
             <TableCell className="whitespace-nowrap tabular-nums text-muted-foreground">
