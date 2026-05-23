@@ -19,7 +19,7 @@ interface TrendVolumeChartProps {
 
 const CHART_HEIGHT = 220;
 const OPEN_COLOR = "var(--coral-500)";
-const CLOSED_COLOR = "var(--warm-300)";
+const CLOSED_COLOR = "#b0aaa6";
 
 export function TrendVolumeChart({
   columns,
