@@ -60,7 +60,7 @@ export function VerticalBarChart({ columns, "aria-label": ariaLabel }: VerticalB
                   className="flex min-w-0 flex-1 flex-col items-center justify-end"
                 >
                   <div
-                    className="w-full max-w-[3rem] rounded-t-md shadow-sm"
+                    className="interactive-fast w-full max-w-[3rem] cursor-default rounded-t-md shadow-sm hover:opacity-90"
                     style={{
                       height: Math.max(h, col.value > 0 ? 6 : 0),
                       backgroundColor: "var(--coral-500)",

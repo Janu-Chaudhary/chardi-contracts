@@ -21,7 +21,7 @@ export function KpiCards({ stats }: KpiCardsProps) {
       </h2>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         {items.map((item) => (
-          <Card key={item.key}>
+          <Card key={item.key} className="interactive hover:bg-warm-50/40">
             <CardContent className="p-5">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {item.label}

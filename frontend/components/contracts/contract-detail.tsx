@@ -77,7 +77,7 @@ export function ContractDetail({ contract }: ContractDetailProps) {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="interactive hover:bg-warm-50/50">
           <CardContent className="p-5">
             <MetaBlock
               label="Amount"
@@ -87,17 +87,17 @@ export function ContractDetail({ contract }: ContractDetailProps) {
             />
           </CardContent>
         </Card>
-        <Card>
+        <Card className="interactive hover:bg-warm-50/50">
           <CardContent className="p-5">
             <MetaBlock label="Due date" value={formatDate(contract.deadline)} icon={Calendar} />
           </CardContent>
         </Card>
-        <Card>
+        <Card className="interactive hover:bg-warm-50/50">
           <CardContent className="p-5">
             <MetaBlock label="Posted" value={formatDate(contract.postedDate)} icon={Calendar} />
           </CardContent>
         </Card>
-        <Card>
+        <Card className="interactive hover:bg-warm-50/50">
           <CardContent className="p-5">
             <MetaBlock label="Portal" value={contract.portal} />
           </CardContent>

@@ -47,7 +47,7 @@ function SortHeader({
       variant="ghost"
       size="sm"
       className={cn(
-        "-ml-3 h-8 gap-1 px-2 text-xs font-medium uppercase tracking-wide text-muted-foreground hover:text-warm-black",
+        "interactive -ml-3 h-8 gap-1 px-2 text-xs font-medium uppercase tracking-wide text-muted-foreground hover:bg-warm-200/60 hover:text-warm-black",
         className
       )}
       onClick={() => onSort?.(column)}
@@ -106,11 +106,11 @@ export function ContractsTable({
       </TableHeader>
       <TableBody>
         {contracts.map((contract) => (
-          <TableRow key={contract.id} className="cursor-pointer">
+          <TableRow key={contract.id} className="group cursor-pointer">
             <TableCell className="max-w-0">
               <Link
                 href={`/contracts/${contract.id}`}
-                className="block min-w-0 truncate font-medium text-warm-black hover:text-coral-600"
+                className="interactive block min-w-0 truncate font-medium text-warm-black group-hover:text-coral-600"
                 title={contract.title}
               >
                 {contract.title}

@@ -5,7 +5,10 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background/95 px-4 backdrop-blur-sm sm:px-6">
       <MobileNav />
-      <Link href="/" className="flex min-w-0 items-center gap-2">
+      <Link
+        href="/"
+        className="interactive flex min-w-0 items-center gap-2 rounded-md hover:opacity-80"
+      >
         <span className="font-display text-xl font-semibold tracking-tight text-warm-black">
           Chardi
         </span>

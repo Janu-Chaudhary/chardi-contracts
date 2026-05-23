@@ -194,7 +194,7 @@ export function ContractsFilters({
           <button
             type="button"
             onClick={() => set({ deadlineFrom: "", deadlineTo: "" })}
-            className="text-[11px] text-muted-foreground underline-offset-2 hover:text-warm-black hover:underline"
+            className="interactive text-[11px] text-muted-foreground underline-offset-2 hover:text-coral-600 hover:underline"
           >
             Clear deadline range
           </button>
@@ -224,7 +224,7 @@ export function ContractsFilters({
           <button
             type="button"
             onClick={() => set({ postedFrom: "", postedTo: "" })}
-            className="text-[11px] text-muted-foreground underline-offset-2 hover:text-warm-black hover:underline"
+            className="interactive text-[11px] text-muted-foreground underline-offset-2 hover:text-coral-600 hover:underline"
           >
             Clear posted range
           </button>

@@ -5,7 +5,6 @@ import { useCallback, useEffect, useState } from "react";
 import { ChevronRight, LineChart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { HorizontalBarChart } from "@/components/charts/horizontal-bar-chart";
 import { ErrorState } from "@/components/states/error-state";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -95,10 +94,10 @@ export function DashboardCharts() {
             onClick={() => setActive(tab.id)}
             disabled={loading}
             className={cn(
-              "min-h-[44px] rounded-md px-2 py-2.5 text-xs font-medium transition-colors sm:text-sm",
+              "interactive min-h-[44px] rounded-md px-2 py-2.5 text-xs font-medium sm:text-sm",
               active === tab.id
                 ? "bg-card text-warm-black shadow-sm"
-                : "text-muted-foreground hover:text-warm-900",
+                : "text-muted-foreground hover:bg-warm-200/50 hover:text-warm-900",
               loading && "opacity-60"
             )}
           >
@@ -156,7 +155,7 @@ export function DashboardCharts() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {federal != null && (
-                  <div className="rounded-lg border border-border bg-warm-50/80 px-4 py-3">
+                  <div className="interactive rounded-lg border border-border bg-warm-50/80 px-4 py-3 hover:border-warm-300 hover:bg-warm-50">
                     <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                       Federal (SAM.gov)
                     </p>
@@ -186,27 +185,30 @@ export function DashboardCharts() {
         </div>
       )}
 
-      <Card className="border-border bg-warm-50/50">
-        <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-coral-500/15">
-              <LineChart className="h-5 w-5 text-coral-600" aria-hidden />
+      <Link
+        href="/trends"
+        className="group block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      >
+        <Card className="interactive-card border-border bg-warm-50/50">
+          <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-coral-500/15 transition-colors group-hover:bg-coral-500/25">
+                <LineChart className="h-5 w-5 text-coral-600" aria-hidden />
+              </div>
+              <div>
+                <h3 className="font-display text-base font-semibold">Posting trends</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Monthly volume, open vs closed breakdown, and upcoming deadlines
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-display text-base font-semibold">Posting trends</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Monthly volume, open vs closed breakdown, and upcoming deadlines
-              </p>
-            </div>
-          </div>
-          <Button variant="outline" className="shrink-0" asChild>
-            <Link href="/trends">
+            <span className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-coral-600 transition-transform duration-200 ease-out group-hover:translate-x-0.5">
               View trends
               <ChevronRight className="h-4 w-4" aria-hidden />
-            </Link>
-          </Button>
-        </CardContent>
-      </Card>
+            </span>
+          </CardContent>
+        </Card>
+      </Link>
     </section>
   );
 }

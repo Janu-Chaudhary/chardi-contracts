@@ -69,7 +69,7 @@ export function DeadlineTrendChart({
                   className="flex min-w-0 flex-1 flex-col items-center justify-end"
                 >
                   <div
-                    className="w-full max-w-[3rem] rounded-t-md shadow-sm transition-all"
+                    className="interactive-fast w-full max-w-[3rem] cursor-default rounded-t-md shadow-sm hover:opacity-90"
                     style={{
                       height: Math.max(h, col.count > 0 ? 6 : 0),
                       backgroundColor: BAR_COLOR,

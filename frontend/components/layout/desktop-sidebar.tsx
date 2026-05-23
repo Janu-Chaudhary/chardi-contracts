@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "@/components/layout/nav-items";
 import { isNavActive } from "@/lib/nav-utils";
+import { navItemClass } from "@/lib/interaction";
 import { cn } from "@/lib/utils";
 
 export function DesktopSidebar() {
@@ -23,7 +24,7 @@ export function DesktopSidebar() {
             return (
               <span
                 key={item.href}
-                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground/60"
+                className="flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground/60"
                 aria-disabled
               >
                 <Icon className="h-4 w-4" aria-hidden />
@@ -38,7 +39,8 @@ export function DesktopSidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
+                navItemClass,
                 active
                   ? "bg-coral-500/15 text-warm-black"
                   : "text-muted-foreground hover:bg-warm-200 hover:text-warm-black"

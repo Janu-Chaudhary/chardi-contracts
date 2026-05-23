@@ -97,10 +97,10 @@ export function TrendsDashboard({
                 onClick={() => setMonths(n)}
                 disabled={loading}
                 className={cn(
-                  "min-h-[40px] rounded-md px-4 py-2 text-sm font-medium transition-colors",
+                  "interactive min-h-[40px] rounded-md px-4 py-2 text-sm font-medium",
                   months === n
                     ? "bg-card text-warm-black shadow-sm"
-                    : "text-muted-foreground hover:text-warm-900",
+                    : "text-muted-foreground hover:bg-warm-200/50 hover:text-warm-900",
                   loading && "opacity-60"
                 )}
               >

@@ -22,6 +22,12 @@
   --radius-lg: 8px;
   --radius-xl: 12px;
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  --shadow-hover: 0 4px 12px rgba(26, 13, 10, 0.06);
+
+  /* Motion */
+  --motion-fast: 150ms;
+  --motion-base: 200ms;
+  --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
 
   /* shadcn semantic tokens → Chardi palette */
   --background: var(--warm-50);
@@ -170,5 +176,83 @@
   .filter-date::-webkit-calendar-picker-indicator {
     cursor: pointer;
     opacity: 0.55;
+    transition: opacity var(--motion-fast) var(--ease-out);
+  }
+
+  .filter-date::-webkit-calendar-picker-indicator:hover {
+    opacity: 0.85;
+  }
+
+  /* ─── Interaction utilities (Phases 0–5) ─── */
+  .interactive {
+    transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+    transition-duration: var(--motion-base);
+    transition-timing-function: var(--ease-out);
+  }
+
+  .interactive-fast {
+    transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+    transition-duration: var(--motion-fast);
+    transition-timing-function: var(--ease-out);
+  }
+
+  .hover-surface:hover {
+    background-color: color-mix(in srgb, var(--warm-200) 65%, transparent);
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-hover);
+  }
+
+  .hover-link:hover {
+    color: var(--coral-600);
+  }
+
+  .interactive-card {
+    cursor: pointer;
+    transition-property: color, background-color, border-color, box-shadow, transform;
+    transition-duration: var(--motion-base);
+    transition-timing-function: var(--ease-out);
+  }
+
+  .interactive-card:hover {
+    border-color: var(--warm-300);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-hover);
+  }
+
+  .interactive-row {
+    cursor: pointer;
+    transition-property: color, background-color, border-color, box-shadow;
+    transition-duration: var(--motion-base);
+    transition-timing-function: var(--ease-out);
+  }
+
+  .interactive-row:hover {
+    background-color: color-mix(in srgb, var(--warm-50) 90%, transparent);
+    box-shadow: inset 3px 0 0 0 var(--coral-500);
+  }
+
+  .nav-item-interactive {
+    transition-property: color, background-color, transform;
+    transition-duration: var(--motion-base);
+    transition-timing-function: var(--ease-out);
+  }
+
+  .nav-item-interactive:hover {
+    transform: translateX(2px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hover-lift:hover,
+    .interactive-card:hover,
+    .nav-item-interactive:hover {
+      transform: none;
+    }
+
+    .interactive:active {
+      transform: none;
+    }
   }
 }

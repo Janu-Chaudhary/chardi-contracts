@@ -96,7 +96,7 @@ export function TrendVolumeChart({
                   className="group flex min-w-0 flex-1 flex-col items-center justify-end"
                 >
                   <div
-                    className="mb-1 flex w-full max-w-[3rem] flex-col justify-end overflow-hidden rounded-t-md shadow-sm"
+                    className="interactive-fast mb-1 flex w-full max-w-[3rem] cursor-default flex-col justify-end overflow-hidden rounded-t-md shadow-sm hover:opacity-90"
                     style={{ height: Math.max(openH + closedH, minSeg) }}
                     title={`${formatChartMonth(col.month)}: ${col.total.toLocaleString()} total (${col.open.toLocaleString()} open, ${col.closed.toLocaleString()} closed)`}
                   >
