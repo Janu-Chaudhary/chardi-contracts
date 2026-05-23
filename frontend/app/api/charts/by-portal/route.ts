@@ -17,18 +17,18 @@ const PORTAL_LABELS: Record<string, string> = {
 };
 
 const PORTAL_COLORS: Record<string, string> = {
-  "SAM.gov":              "#c2714f",   // coral-600 — primary, most prominent
-  "nyscr.ny.gov":         "#d4845f",   // coral-500/muted
-  "data.cityofnewyork.us":"#b8956a",   // warm amber
-  "data.cityofchicago.org":"#a89080",  // warm taupe
-  "caleprocure.ca.gov":   "#c9956c",   // sandy amber
-  "eva.virginia.gov":     "#b07d6b",   // dusty rose-brown
-  "txsmartbuy.gov":       "#c08060",   // terracotta
-  "doas.ga.gov":          "#a87c70",   // muted clay
-  "vita.virginia.gov":    "#b89080",   // warm mauve
-  "bidbuy.illinois.gov":  "#c09878",   // warm sand
-  "dms.myflorida.com":    "#b88870",   // soft sienna
-  "nyc_contract_awards":  "#c4906a",   // warm peach
+  "SAM.gov":               "#e07b54",  // coral — primary brand anchor
+  "nyscr.ny.gov":          "#5b8db8",  // steel blue — calm, readable
+  "data.cityofnewyork.us": "#5b8db8",  // same family as NYSCR
+  "data.cityofchicago.org":"#7b9e87",  // sage green — neutral, earthy
+  "caleprocure.ca.gov":    "#c4956a",  // warm amber — sun-baked
+  "eva.virginia.gov":      "#8a7db8",  // soft indigo — distinguished
+  "txsmartbuy.gov":        "#b85c5c",  // muted rose-red — warm but not loud
+  "doas.ga.gov":           "#6aab9e",  // teal-sage — fresh
+  "vita.virginia.gov":     "#9b7db8",  // lavender — pairs with indigo
+  "bidbuy.illinois.gov":   "#6a8fb8",  // slate blue — distinct from steel
+  "dms.myflorida.com":     "#c4a46a",  // golden sand
+  "nyc_contract_awards":   "#7aab7a",  // muted green
 };
 
 export async function GET() {
@@ -47,7 +47,7 @@ export async function GET() {
     const data = rows.map((r) => ({
       portal: r.source_portal,
       label: PORTAL_LABELS[r.source_portal as string] || r.source_portal,
-      color: PORTAL_COLORS[r.source_portal as string] || "#c09880",
+      color: PORTAL_COLORS[r.source_portal as string] || "#8a9bb8",
       total: parseInt(String(r.total)),
       open: parseInt(String(r.open)),
       closed: parseInt(String(r.closed)),
