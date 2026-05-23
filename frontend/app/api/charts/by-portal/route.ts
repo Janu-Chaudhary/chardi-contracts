@@ -17,15 +17,18 @@ const PORTAL_LABELS: Record<string, string> = {
 };
 
 const PORTAL_COLORS: Record<string, string> = {
-  "nyscr.ny.gov": "#3b82f6",
-  "caleprocure.ca.gov": "#f59e0b",
-  "eva.virginia.gov": "#10b981",
-  "txsmartbuy.gov": "#ef4444",
-  "vita.virginia.gov": "#8b5cf6",
-  "SAM.gov": "#6366f1",
-  "doas.ga.gov": "#16a34a",
-  "bidbuy.illinois.gov": "#0ea5e9",
-  "dms.myflorida.com": "#f97316",
+  "SAM.gov":              "#c2714f",   // coral-600 — primary, most prominent
+  "nyscr.ny.gov":         "#d4845f",   // coral-500/muted
+  "data.cityofnewyork.us":"#b8956a",   // warm amber
+  "data.cityofchicago.org":"#a89080",  // warm taupe
+  "caleprocure.ca.gov":   "#c9956c",   // sandy amber
+  "eva.virginia.gov":     "#b07d6b",   // dusty rose-brown
+  "txsmartbuy.gov":       "#c08060",   // terracotta
+  "doas.ga.gov":          "#a87c70",   // muted clay
+  "vita.virginia.gov":    "#b89080",   // warm mauve
+  "bidbuy.illinois.gov":  "#c09878",   // warm sand
+  "dms.myflorida.com":    "#b88870",   // soft sienna
+  "nyc_contract_awards":  "#c4906a",   // warm peach
 };
 
 export async function GET() {
@@ -44,7 +47,7 @@ export async function GET() {
     const data = rows.map((r) => ({
       portal: r.source_portal,
       label: PORTAL_LABELS[r.source_portal as string] || r.source_portal,
-      color: PORTAL_COLORS[r.source_portal as string] || "#94a3b8",
+      color: PORTAL_COLORS[r.source_portal as string] || "#c09880",
       total: parseInt(String(r.total)),
       open: parseInt(String(r.open)),
       closed: parseInt(String(r.closed)),
