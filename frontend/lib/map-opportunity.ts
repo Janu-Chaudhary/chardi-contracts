@@ -23,10 +23,16 @@ function normalizeRegion(
   return raw === "State" ? "State" : "Federal";
 }
 
+/** Strip portal-appended suffixes like "- EXPIRED" from titles. */
+function cleanTitle(raw: string | null | undefined): string {
+  if (!raw?.trim()) return "Untitled opportunity";
+  return raw.trim().replace(/\s*[-–]\s*EXPIRED\s*$/i, "").trim() || "Untitled opportunity";
+}
+
 export function mapOpportunity(row: OpportunityRow): Contract {
   return {
     id: row.id,
-    title: row.title?.trim() || "Untitled opportunity",
+    title: cleanTitle(row.title),
     agency: row.buyer_name?.trim() || "Unknown agency",
     vendor: null,
     amount: toNumber(row.value_numeric),

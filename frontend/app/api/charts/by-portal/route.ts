@@ -5,15 +5,18 @@ export const runtime = "edge";
 export const revalidate = 300;
 
 const PORTAL_LABELS: Record<string, string> = {
-  "nyscr.ny.gov": "New York (NYSCR)",
-  "caleprocure.ca.gov": "California",
-  "eva.virginia.gov": "Virginia (eVA)",
-  "txsmartbuy.gov": "Texas",
-  "vita.virginia.gov": "Virginia (VITA)",
-  "SAM.gov": "Federal (SAM.gov)",
-  "doas.ga.gov": "Georgia (TGM)",
-  "bidbuy.illinois.gov": "Illinois (BidBuy)",
-  "dms.myflorida.com": "Florida (DMS)",
+  "nyscr.ny.gov":          "New York (NYSCR)",
+  "caleprocure.ca.gov":    "California",
+  "eva.virginia.gov":      "Virginia (eVA)",
+  "txsmartbuy.gov":        "Texas",
+  "vita.virginia.gov":     "Virginia (VITA)",
+  "SAM.gov":               "Federal (SAM.gov)",
+  "doas.ga.gov":           "Georgia (TGM)",
+  "bidbuy.illinois.gov":   "Illinois (BidBuy)",
+  "dms.myflorida.com":     "Florida (DMS)",
+  "data.cityofnewyork.us": "NYC (Open Data)",
+  "data.cityofchicago.org":"Chicago (Data Portal)",
+  "nyc_contract_awards":   "NYC Contract Awards",
 };
 
 const PORTAL_COLORS: Record<string, string> = {

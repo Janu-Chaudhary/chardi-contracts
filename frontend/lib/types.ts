@@ -50,7 +50,7 @@ export type SortOrder = "asc" | "desc";
 
 export const DEFAULT_FILTERS: ContractFilters = {
   q: "",
-  status: "",
+  status: "OPEN",
   portalRegion: "",
   portal: "",
   state: "",
