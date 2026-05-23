@@ -160,7 +160,7 @@ export function TrendVolumeChart({
                   <div
                     className={cn(
                       "interactive-fast mb-1 flex w-full max-w-[3rem] cursor-default flex-col justify-end overflow-hidden rounded-t-md shadow-sm transition-opacity",
-                      isHovered ? "opacity-100 ring-2 ring-coral-400/50 ring-offset-1" : "hover:opacity-90"
+                      isHovered ? "opacity-100" : "hover:opacity-90"
                     )}
                     style={{ height: Math.max(openH + closedH, minSeg) }}
                     aria-label={`${formatChartMonth(col.month)}: ${col.total.toLocaleString()} total`}
