@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useCallback } from "react";
 import { buildAxisTicks, formatAxisValue, formatChartMonth } from "@/lib/chart-utils";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +26,12 @@ export function TrendVolumeChart({
   "aria-label": ariaLabel,
   className,
 }: TrendVolumeChartProps) {
+  const [showOpen, setShowOpen] = useState(true);
+  const [showClosed, setShowClosed] = useState(true);
+
+  const toggleOpen = useCallback(() => setShowOpen((v) => !v), []);
+  const toggleClosed = useCallback(() => setShowClosed((v) => !v), []);
+
   if (columns.length === 0) {
     return <p className="text-sm text-muted-foreground">No data for this period.</p>;
   }
@@ -34,32 +43,56 @@ export function TrendVolumeChart({
     closed: Number(c.closed) || 0,
   }));
 
-  const maxTotal = Math.max(...safe.map((c) => c.total), 1);
-  const ticks = buildAxisTicks(maxTotal);
-  const axisMax = ticks[ticks.length - 1] ?? maxTotal;
+  // Compute visible values based on toggle state
+  const visibleMax = Math.max(
+    ...safe.map((c) => (showOpen ? c.open : 0) + (showClosed ? c.closed : 0)),
+    1
+  );
+  const ticks = buildAxisTicks(visibleMax);
+  const axisMax = ticks[ticks.length - 1] ?? visibleMax;
 
   return (
     <figure className={cn("w-full", className)} aria-label={ariaLabel}>
+      {/* ── Interactive legend ── */}
       <div className="mb-3 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-        <span className="inline-flex items-center gap-1.5">
+        <button
+          type="button"
+          onClick={toggleOpen}
+          className={cn(
+            "interactive-fast inline-flex items-center gap-1.5 rounded-md px-2 py-1 hover:bg-warm-200/60",
+            !showOpen && "opacity-40 line-through"
+          )}
+          aria-pressed={showOpen}
+          aria-label="Toggle open contracts"
+        >
           <span
             className="h-2.5 w-2.5 rounded-sm"
             style={{ backgroundColor: OPEN_COLOR }}
             aria-hidden
           />
           Open
-        </span>
-        <span className="inline-flex items-center gap-1.5">
+        </button>
+        <button
+          type="button"
+          onClick={toggleClosed}
+          className={cn(
+            "interactive-fast inline-flex items-center gap-1.5 rounded-md px-2 py-1 hover:bg-warm-200/60",
+            !showClosed && "opacity-40 line-through"
+          )}
+          aria-pressed={showClosed}
+          aria-label="Toggle closed contracts"
+        >
           <span
             className="h-2.5 w-2.5 rounded-sm"
             style={{ backgroundColor: CLOSED_COLOR }}
             aria-hidden
           />
           Closed
-        </span>
+        </button>
       </div>
 
       <div className="flex gap-3">
+        {/* Y-axis */}
         <div
           className="flex w-10 shrink-0 flex-col justify-between py-1 text-right text-[10px] tabular-nums text-muted-foreground sm:w-11 sm:text-xs"
           style={{ height: CHART_HEIGHT }}
@@ -70,6 +103,7 @@ export function TrendVolumeChart({
           ))}
         </div>
 
+        {/* Chart area */}
         <div className="relative min-w-0 flex-1">
           <div className="pointer-events-none absolute inset-0" aria-hidden>
             {ticks.map((tick) => (
@@ -86,9 +120,12 @@ export function TrendVolumeChart({
             style={{ height: CHART_HEIGHT }}
           >
             {safe.map((col) => {
-              const openH = Math.round((col.open / axisMax) * (CHART_HEIGHT - 8));
-              const closedH = Math.round((col.closed / axisMax) * (CHART_HEIGHT - 8));
-              const minSeg = col.total > 0 ? 3 : 0;
+              const visOpen = showOpen ? col.open : 0;
+              const visClosed = showClosed ? col.closed : 0;
+              const visTotal = visOpen + visClosed;
+              const openH = Math.round((visOpen / axisMax) * (CHART_HEIGHT - 8));
+              const closedH = Math.round((visClosed / axisMax) * (CHART_HEIGHT - 8));
+              const minSeg = visTotal > 0 ? 3 : 0;
 
               return (
                 <div
@@ -100,20 +137,20 @@ export function TrendVolumeChart({
                     style={{ height: Math.max(openH + closedH, minSeg) }}
                     title={`${formatChartMonth(col.month)}: ${col.total.toLocaleString()} total (${col.open.toLocaleString()} open, ${col.closed.toLocaleString()} closed)`}
                   >
-                    {col.closed > 0 && (
+                    {showClosed && visClosed > 0 && (
                       <div
                         className="w-full transition-all"
                         style={{
-                          height: Math.max(closedH, col.closed > 0 && col.open === 0 ? minSeg : 0),
+                          height: Math.max(closedH, visClosed > 0 && visOpen === 0 ? minSeg : 0),
                           backgroundColor: CLOSED_COLOR,
                         }}
                       />
                     )}
-                    {col.open > 0 && (
+                    {showOpen && visOpen > 0 && (
                       <div
                         className="w-full transition-all"
                         style={{
-                          height: Math.max(openH, col.open > 0 && col.closed === 0 ? minSeg : 0),
+                          height: Math.max(openH, visOpen > 0 && visClosed === 0 ? minSeg : 0),
                           backgroundColor: OPEN_COLOR,
                         }}
                       />
@@ -126,6 +163,7 @@ export function TrendVolumeChart({
         </div>
       </div>
 
+      {/* X-axis labels */}
       <div className="mt-2 flex justify-between gap-1 pl-[3.25rem] sm:pl-14">
         {safe.map((col) => (
           <span
