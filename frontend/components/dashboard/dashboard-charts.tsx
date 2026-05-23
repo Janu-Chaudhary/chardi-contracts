@@ -137,10 +137,6 @@ export function DashboardCharts() {
                       label: p.label,
                       value: p.total,
                       color: p.color,
-                      sublabelParts: [
-                        { text: `${p.open.toLocaleString()} open`, variant: "open" as const },
-                        { text: `${p.closed.toLocaleString()} closed`, variant: "closed" as const },
-                      ],
                     }))}
                   />
                 ) : (
@@ -176,10 +172,6 @@ export function DashboardCharts() {
                       label: stateNameOnly(s.state),
                       value: s.total,
                       color: "var(--coral-500)",
-                      sublabelParts: [
-                        { text: `${s.open.toLocaleString()} open`, variant: "open" as const },
-                        ...(s.closed > 0 ? [{ text: `${s.closed.toLocaleString()} closed`, variant: "closed" as const }] : []),
-                      ],
                     }))}
                     maxItems={8}
                   />
