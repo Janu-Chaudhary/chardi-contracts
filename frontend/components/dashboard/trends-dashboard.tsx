@@ -114,7 +114,7 @@ export function TrendsDashboard({
       {error && <ErrorState message={error} onRetry={() => loadTrend(months)} />}
 
       <section aria-label="Trend summary" className="grid gap-3 sm:grid-cols-3">
-        <Card>
+        <Card className="interactive hover-lift active:scale-[0.98]">
           <CardContent className="p-5">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Posted in range
@@ -125,7 +125,7 @@ export function TrendsDashboard({
             <p className="mt-1 text-xs text-muted-foreground">Last {months} months</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="interactive hover-lift active:scale-[0.98]">
           <CardContent className="p-5">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Peak month
@@ -140,7 +140,7 @@ export function TrendsDashboard({
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="interactive hover-lift active:scale-[0.98]">
           <CardContent className="p-5">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Upcoming deadlines
@@ -164,7 +164,7 @@ export function TrendsDashboard({
 
       {!loading && !error && (
         <div className="space-y-6">
-          <Card>
+          <Card className="interactive hover:shadow-md">
             <CardHeader>
               <CardTitle className="font-display text-lg">Posting volume over time</CardTitle>
               <p className="text-sm text-muted-foreground">
@@ -192,7 +192,7 @@ export function TrendsDashboard({
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="interactive hover:shadow-md">
             <CardHeader>
               <CardTitle className="font-display text-lg">Upcoming deadlines</CardTitle>
               <p className="text-sm text-muted-foreground">
