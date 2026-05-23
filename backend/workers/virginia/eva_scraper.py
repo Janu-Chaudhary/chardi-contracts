@@ -305,6 +305,33 @@ async def _fetch_all_solr_pages(
     return all_docs[:target] if target else all_docs
 
 
+async def _check_portal_reachable() -> None:
+    """
+    Quick HTTP probe before launching Playwright.
+    Raises EvaPortalError immediately if the portal returns 4xx/5xx,
+    saving ~10 minutes of Playwright retry time.
+    """
+    import aiohttp
+    probe_url = "https://mvendor.cgieva.com/Vendor/public/PublicSearch.jsp"
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                probe_url,
+                headers={"User-Agent": USER_AGENT},
+                timeout=aiohttp.ClientTimeout(total=15),
+                allow_redirects=True,
+            ) as resp:
+                if resp.status in (403, 429, 502, 503):
+                    raise EvaPortalError(
+                        f"Portal probe returned HTTP {resp.status} — "
+                        f"portal is blocking this environment. Skipping eVA."
+                    )
+    except EvaPortalError:
+        raise
+    except Exception as exc:
+        raise EvaPortalError(f"Portal probe failed: {exc}") from exc
+
+
 # ── Public entry point ────────────────────────────────────────────────────────
 
 async def fetch_eva_contracts() -> list[dict]:
@@ -313,6 +340,9 @@ async def fetch_eva_contracts() -> list[dict]:
     fetch all matching docs from Solr, and return raw doc dicts.
     """
     from playwright.async_api import async_playwright
+
+    # Fast-fail if portal is unreachable — avoids wasting Playwright retries
+    await _check_portal_reachable()
 
     async with async_playwright() as playwright:
         browser, page = await _load_portal_with_retry(playwright)

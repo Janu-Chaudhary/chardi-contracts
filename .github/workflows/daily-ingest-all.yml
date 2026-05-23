@@ -90,6 +90,7 @@ jobs:
     name: Virginia (eVA + VITA) — 30 days
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    continue-on-error: true   # eVA portal may block CI IPs; VITA runs regardless
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

@@ -102,6 +102,8 @@ async def _async_main() -> None:
     try:
         result = await run_virginia_ingestion()
         print(json.dumps(result, indent=2, default=str))
+        # Exit 0 even if eVA failed — VITA success is enough
+        # eVA failure is logged to scrape_errors for observability
     finally:
         await db.close_pool()
 
