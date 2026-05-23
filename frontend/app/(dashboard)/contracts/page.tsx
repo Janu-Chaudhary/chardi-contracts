@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import { ContractsExplorer } from "@/components/contracts/contracts-explorer";
+import { ContractListSkeleton } from "@/components/states/loading-skeletons";
 
 export default function ContractsPage() {
   return (
@@ -11,7 +13,9 @@ export default function ContractsPage() {
           Search and filter opportunities across SAM.gov and state portals.
         </p>
       </header>
-      <ContractsExplorer />
+      <Suspense fallback={<ContractListSkeleton count={5} />}>
+        <ContractsExplorer />
+      </Suspense>
     </div>
   );
 }

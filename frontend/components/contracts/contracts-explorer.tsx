@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Download, FileJson, FileText, Search, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -40,39 +41,119 @@ import {
 
 const PAGE_SIZE = 20;
 
+// ── URL ↔ filter helpers ──────────────────────────────────────────────────────
+
+function filtersFromParams(sp: URLSearchParams): ContractFilters {
+  return {
+    q:            sp.get("q")            ?? DEFAULT_FILTERS.q,
+    status:       (sp.get("status")      ?? DEFAULT_FILTERS.status) as ContractFilters["status"],
+    portalRegion: (sp.get("region")      ?? DEFAULT_FILTERS.portalRegion) as ContractFilters["portalRegion"],
+    portal:       sp.get("portal")       ?? DEFAULT_FILTERS.portal,
+    state:        sp.get("state")        ?? DEFAULT_FILTERS.state,
+    noticeType:   sp.get("noticeType")   ?? DEFAULT_FILTERS.noticeType,
+    buyerType:    sp.get("buyerType")    ?? DEFAULT_FILTERS.buyerType,
+    industry:     sp.get("industry")     ?? DEFAULT_FILTERS.industry,
+    deadlineFrom: sp.get("deadlineFrom") ?? DEFAULT_FILTERS.deadlineFrom,
+    deadlineTo:   sp.get("deadlineTo")   ?? DEFAULT_FILTERS.deadlineTo,
+    postedFrom:   sp.get("postedFrom")   ?? DEFAULT_FILTERS.postedFrom,
+    postedTo:     sp.get("postedTo")     ?? DEFAULT_FILTERS.postedTo,
+  };
+}
+
+function filtersToParams(
+  filters: ContractFilters,
+  page: number,
+  sortKey: SortKey,
+  sortOrder: SortOrder
+): URLSearchParams {
+  const sp = new URLSearchParams();
+  const def = DEFAULT_FILTERS;
+
+  if (filters.q)            sp.set("q",            filters.q);
+  if (filters.status        !== def.status)        sp.set("status",       filters.status);
+  if (filters.portalRegion  !== def.portalRegion)  sp.set("region",       filters.portalRegion);
+  if (filters.portal        !== def.portal)        sp.set("portal",       filters.portal);
+  if (filters.state         !== def.state)         sp.set("state",        filters.state);
+  if (filters.noticeType    !== def.noticeType)    sp.set("noticeType",   filters.noticeType);
+  if (filters.buyerType     !== def.buyerType)     sp.set("buyerType",    filters.buyerType);
+  if (filters.industry      !== def.industry)      sp.set("industry",     filters.industry);
+  if (filters.deadlineFrom)  sp.set("deadlineFrom", filters.deadlineFrom);
+  if (filters.deadlineTo)    sp.set("deadlineTo",   filters.deadlineTo);
+  if (filters.postedFrom)    sp.set("postedFrom",   filters.postedFrom);
+  if (filters.postedTo)      sp.set("postedTo",     filters.postedTo);
+  if (page > 1)              sp.set("page",         String(page));
+  if (sortKey !== "deadline") sp.set("sort",        sortKey);
+  if (sortOrder !== "asc")   sp.set("order",        sortOrder);
+
+  return sp;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export function ContractsExplorer() {
-  const [filters, setFilters] = useState<ContractFilters>(DEFAULT_FILTERS);
+  const router       = useRouter();
+  const pathname     = usePathname();
+  const searchParams = useSearchParams();
+
+  // ── Initialise state from URL on first render ──
+  const [filters,    setFiltersState]  = useState<ContractFilters>(() => filtersFromParams(searchParams));
+  const [sortKey,    setSortKey]       = useState<SortKey>(() => (searchParams.get("sort") as SortKey) ?? "deadline");
+  const [sortOrder,  setSortOrder]     = useState<SortOrder>(() => (searchParams.get("order") as SortOrder) ?? "asc");
+  const [page,       setPageState]     = useState<number>(() => Number(searchParams.get("page") ?? 1));
+
   const debouncedQ = useDebounce(filters.q, 400);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [sortKey, setSortKey] = useState<SortKey>("deadline");
-  const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
-  const [page, setPage] = useState(1);
 
-  const [results, setResults] = useState<Contract[]>([]);
-  const [total, setTotal] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+  const [results,      setResults]      = useState<Contract[]>([]);
+  const [total,        setTotal]        = useState(0);
+  const [totalPages,   setTotalPages]   = useState(0);
   const [facetOptions, setFacetOptions] = useState<FiltersResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loading,      setLoading]      = useState(true);
+  const [error,        setError]        = useState<string | null>(null);
 
+  // ── Sync state → URL (replace, not push — no extra history entries) ──
+  const syncUrl = useCallback(
+    (f: ContractFilters, p: number, sk: SortKey, so: SortOrder) => {
+      const sp = filtersToParams(f, p, sk, so);
+      const qs = sp.toString();
+      router.replace(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: false });
+    },
+    [router, pathname]
+  );
+
+  // ── Wrapped setters that also update the URL ──
+  const setFilters = useCallback(
+    (f: ContractFilters) => {
+      setFiltersState(f);
+      setPageState(1);
+      syncUrl(f, 1, sortKey, sortOrder);
+    },
+    [syncUrl, sortKey, sortOrder]
+  );
+
+  const setPage = useCallback(
+    (p: number) => {
+      setPageState(p);
+      syncUrl(filters, p, sortKey, sortOrder);
+    },
+    [syncUrl, filters, sortKey, sortOrder]
+  );
+
+  // ── Load facet options once ──
   useEffect(() => {
     fetchFilters()
       .then(setFacetOptions)
       .catch(() => setFacetOptions(null));
   }, []);
 
+  // ── Load contracts whenever effective query changes ──
   const loadContracts = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const queryFilters = { ...filters, q: debouncedQ };
       const res = await fetchOpportunities(
-        filtersToQuery(queryFilters, {
-          page,
-          limit: PAGE_SIZE,
-          sortKey,
-          sortOrder,
-        })
+        filtersToQuery(queryFilters, { page, limit: PAGE_SIZE, sortKey, sortOrder })
       );
       setResults(mapOpportunities(res.data));
       setTotal(res.pagination.total);
@@ -91,45 +172,28 @@ export function ContractsExplorer() {
     loadContracts();
   }, [loadContracts]);
 
-  // Derive a stable string key from all non-search filters so the
-  // useEffect dependency array never changes size (rules-of-hooks safe).
-  const filterKey = [
-    filters.status,
-    filters.portalRegion,
-    filters.portal,
-    filters.state,
-    filters.noticeType,
-    filters.buyerType,
-    filters.industry,
-    filters.deadlineFrom,
-    filters.deadlineTo,
-    filters.postedFrom,
-    filters.postedTo,
-    debouncedQ,
-  ].join("|");
+  // ── Sort handler ──
+  const handleSort = useCallback(
+    (key: SortKey) => {
+      const newOrder: SortOrder = sortKey === key && sortOrder === "asc" ? "desc" : "asc";
+      const newKey = key;
+      setSortKey(newKey);
+      setSortOrder(newOrder);
+      setPageState(1);
+      syncUrl(filters, 1, newKey, newOrder);
+    },
+    [sortKey, sortOrder, filters, syncUrl]
+  );
 
-  // Reset to page 1 whenever any filter changes
-  useEffect(() => {
-    setPage(1);
-  // filterKey is a stable primitive — safe single dep
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterKey]);
-
-  const handleSort = (key: SortKey) => {
-    if (sortKey === key) {
-      setSortOrder((o) => (o === "asc" ? "desc" : "asc"));
-    } else {
-      setSortKey(key);
-      setSortOrder("asc");
-    }
-    setPage(1);
-  };
-
-  const resetFilters = () => {
-    setFilters(DEFAULT_FILTERS);
-    setPage(1);
+  // ── Reset ──
+  const resetFilters = useCallback(() => {
+    setFiltersState(DEFAULT_FILTERS);
+    setSortKey("deadline");
+    setSortOrder("asc");
+    setPageState(1);
     setMobileFiltersOpen(false);
-  };
+    router.replace(pathname, { scroll: false });
+  }, [router, pathname]);
 
   const activeFilterCount = [
     filters.status,
@@ -144,18 +208,17 @@ export function ContractsExplorer() {
   ].filter(Boolean).length;
 
   const exportBaseHref = `/api/export${filtersToExportParams({ ...filters, q: debouncedQ })}`;
-  const exportCsvHref = exportBaseHref.includes("?")
+  const exportCsvHref  = exportBaseHref.includes("?")
     ? exportBaseHref.replace("?", "?format=csv&")
     : `${exportBaseHref}?format=csv`;
   const exportJsonHref = exportBaseHref.includes("?")
     ? exportBaseHref.replace("?", "?format=json&")
     : `${exportBaseHref}?format=json`;
 
-  const [downloadOpen, setDownloadOpen] = useState(false);
+  const [downloadOpen,   setDownloadOpen]   = useState(false);
   const [downloadActive, setDownloadActive] = useState(false);
   const downloadRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown on outside click
   useEffect(() => {
     if (!downloadOpen) return;
     const handler = (e: MouseEvent) => {
@@ -203,7 +266,7 @@ export function ContractsExplorer() {
               />
             </div>
 
-            {/* ── Download dropdown ── */}
+            {/* Download dropdown */}
             <div className="relative shrink-0" ref={downloadRef}>
               <Button
                 variant="outline"
@@ -306,12 +369,8 @@ export function ContractsExplorer() {
           </p>
         </div>
 
-        {error && (
-          <ErrorState message={error} onRetry={loadContracts} />
-        )}
-
+        {error && <ErrorState message={error} onRetry={loadContracts} />}
         {!error && loading && <ContractListSkeleton count={5} />}
-
         {!error && !loading && results.length === 0 && (
           <NoResultsState onClearFilters={resetFilters} />
         )}

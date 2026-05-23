@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   ArrowLeft,
   ExternalLink,
@@ -12,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { StatusBadge } from "@/components/contracts/status-badge";
 import { WinnersSidebar } from "@/components/contracts/winners-sidebar";
+import { BackButton } from "@/components/contracts/back-button";
 import type { Contract } from "@/lib/types";
 import { cn, formatCurrency, formatDate, hasCurrencyValue } from "@/lib/utils";
 import { stateLabel } from "@/lib/state-names";
@@ -57,12 +57,7 @@ export function ContractDetail({ contract }: ContractDetailProps) {
 
       {/* ── Header ─────────────────────────────────────────────── */}
       <div>
-        <Button variant="ghost" size="sm" className="-ml-2 mb-4" asChild>
-          <Link href="/contracts">
-            <ArrowLeft className="h-4 w-4" aria-hidden />
-            Back to contracts
-          </Link>
-        </Button>
+        <BackButton />
 
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0 space-y-2">
