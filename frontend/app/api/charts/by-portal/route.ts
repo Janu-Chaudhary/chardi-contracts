@@ -13,6 +13,7 @@ const PORTAL_LABELS: Record<string, string> = {
   "SAM.gov": "Federal (SAM.gov)",
   "doas.ga.gov": "Georgia (TGM)",
   "bidbuy.illinois.gov": "Illinois (BidBuy)",
+  "dms.myflorida.com": "Florida (DMS)",
 };
 
 const PORTAL_COLORS: Record<string, string> = {
@@ -24,6 +25,7 @@ const PORTAL_COLORS: Record<string, string> = {
   "SAM.gov": "#6366f1",
   "doas.ga.gov": "#16a34a",
   "bidbuy.illinois.gov": "#0ea5e9",
+  "dms.myflorida.com": "#f97316",
 };
 
 export async function GET() {

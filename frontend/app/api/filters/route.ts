@@ -80,6 +80,7 @@ export async function GET() {
       "SAM.gov": "Federal (SAM.gov)",
       "doas.ga.gov": "Georgia (TGM)",
       "bidbuy.illinois.gov": "Illinois (BidBuy)",
+      "dms.myflorida.com": "Florida (DMS)",
     };
 
     return NextResponse.json({

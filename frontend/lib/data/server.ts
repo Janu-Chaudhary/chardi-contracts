@@ -21,6 +21,7 @@ const PORTAL_LABELS: Record<string, string> = {
   "SAM.gov": "SAM.gov",
   "doas.ga.gov": "Georgia",
   "bidbuy.illinois.gov": "Illinois",
+  "dms.myflorida.com": "Florida",
 };
 
 const PORTAL_COLORS: Record<string, string> = {
@@ -32,6 +33,7 @@ const PORTAL_COLORS: Record<string, string> = {
   "SAM.gov": "#1f1a17",
   "doas.ga.gov": "#16a34a",
   "bidbuy.illinois.gov": "#0ea5e9",
+  "dms.myflorida.com": "#f97316",
 };
 
 const OPPORTUNITY_LIST_SELECT = `
