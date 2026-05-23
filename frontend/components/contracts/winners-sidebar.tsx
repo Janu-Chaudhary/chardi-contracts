@@ -2,18 +2,13 @@
 
 /**
  * WinnersSidebar
- *
- * Lazy-loaded client component that fetches and renders the
- * "Who has won similar before?" award history panel.
- *
- * Zero blocking: fetches after mount, shows skeleton while loading.
- * Data is cached at the API layer for 1 hour.
+ * "Who has won similar before?" — compact leaderboard style.
+ * Lazy-loaded, zero blocking, 1hr cached.
  */
 
 import { useEffect, useState } from "react";
-import { Trophy, TrendingUp, Building2, AlertCircle } from "lucide-react";
+import { TrendingUp, Building2, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn, formatCurrency } from "@/lib/utils";
 
@@ -31,10 +26,7 @@ interface AwardWinner {
 interface WinnersResponse {
   opportunity_id: string;
   opportunity_title: string;
-  matched_on: {
-    industry: string | null;
-    state_region: string | null;
-  };
+  matched_on: { industry: string | null; state_region: string | null };
   winners: AwardWinner[];
   total: number;
 }
@@ -44,48 +36,52 @@ interface WinnersSidebarProps {
   industry?: string | null;
 }
 
+const PORTAL_LABELS: Record<string, string> = {
+  "data.oregon.gov": "Oregon",
+  "datacatalog.cookcountyil.gov": "Cook County IL",
+  "data.houstontx.gov": "Houston TX",
+  "data.cityofnewyork.us": "New York City",
+  "dms.myflorida.com": "Florida",
+  "bidbuy.illinois.gov": "Illinois",
+  "data.cityofchicago.org": "Chicago",
+  "eva.virginia.gov": "Virginia",
+};
+
+const RANK_STYLES: Record<number, string> = {
+  1: "bg-yellow-400/20 text-yellow-700 border-yellow-300/50",
+  2: "bg-slate-100 text-slate-500 border-slate-200",
+  3: "bg-amber-100/60 text-amber-700 border-amber-200/60",
+};
+
+function RankBadge({ rank }: { rank: number }) {
+  return (
+    <span
+      className={cn(
+        "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold tabular-nums",
+        RANK_STYLES[rank] ?? "bg-warm-100 text-warm-500 border-warm-200"
+      )}
+      aria-label={`Rank ${rank}`}
+    >
+      {rank}
+    </span>
+  );
+}
+
 function WinnerSkeleton() {
   return (
-    <div className="space-y-3">
-      {[1, 2, 3].map((i) => (
-        <div key={i} className="flex items-start gap-3 rounded-lg border border-border/50 p-3">
-          <Skeleton className="mt-0.5 h-6 w-6 shrink-0 rounded-full" />
-          <div className="min-w-0 flex-1 space-y-1.5">
-            <Skeleton className="h-3.5 w-3/4" />
-            <Skeleton className="h-3 w-1/2" />
+    <div className="space-y-2.5">
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className="flex items-center gap-2.5 py-1">
+          <Skeleton className="h-5 w-5 shrink-0 rounded-full" />
+          <div className="min-w-0 flex-1 space-y-1">
+            <Skeleton className="h-3 w-3/4" />
+            <Skeleton className="h-2.5 w-1/2" />
           </div>
+          <Skeleton className="h-3 w-8 shrink-0" />
         </div>
       ))}
     </div>
   );
-}
-
-function MedalIcon({ rank }: { rank: number }) {
-  const colors: Record<number, string> = {
-    1: "text-yellow-500",
-    2: "text-slate-400",
-    3: "text-amber-600",
-  };
-  return (
-    <Trophy
-      className={cn("h-4 w-4 shrink-0", colors[rank] ?? "text-muted-foreground")}
-      aria-hidden
-    />
-  );
-}
-
-function formatPortalLabel(portal: string): string {
-  const labels: Record<string, string> = {
-    "data.oregon.gov": "Oregon",
-    "datacatalog.cookcountyil.gov": "Cook County IL",
-    "data.houstontx.gov": "Houston TX",
-    "data.cityofnewyork.us": "New York City",
-    "dms.myflorida.com": "Florida",
-    "bidbuy.illinois.gov": "Illinois",
-    "data.cityofchicago.org": "Chicago",
-    "eva.virginia.gov": "Virginia",
-  };
-  return labels[portal] ?? portal;
 }
 
 export function WinnersSidebar({ opportunityId, industry }: WinnersSidebarProps) {
@@ -95,105 +91,117 @@ export function WinnersSidebar({ opportunityId, industry }: WinnersSidebarProps)
 
   useEffect(() => {
     if (!opportunityId) return;
-
     let cancelled = false;
 
-    async function load() {
-      try {
-        const res = await fetch(`/api/opportunities/${opportunityId}/winners`, {
-          // Use browser cache — API sets s-maxage=3600
-          cache: "force-cache",
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json: WinnersResponse = await res.json();
-        if (!cancelled) setData(json);
-      } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
+    fetch(`/api/opportunities/${opportunityId}/winners`, { cache: "force-cache" })
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json() as Promise<WinnersResponse>;
+      })
+      .then((json) => { if (!cancelled) setData(json); })
+      .catch((err) => { if (!cancelled) setError(err.message); })
+      .finally(() => { if (!cancelled) setLoading(false); });
 
-    load();
     return () => { cancelled = true; };
   }, [opportunityId]);
 
+  const matchLabel = data?.matched_on.industry
+    ? [data.matched_on.industry, data.matched_on.state_region].filter(Boolean).join(" · ")
+    : industry ?? null;
+
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 font-display text-lg">
-          <TrendingUp className="h-4 w-4 text-coral-500" aria-hidden />
+    <Card className="overflow-hidden">
+      <CardHeader className="border-b border-border/60 pb-3">
+        <CardTitle className="flex items-center gap-2 font-display text-base">
+          <TrendingUp className="h-3.5 w-3.5 text-coral-500" aria-hidden />
           Who has won similar?
         </CardTitle>
-        {data?.matched_on.industry && (
-          <p className="text-xs text-muted-foreground">
+        {matchLabel && (
+          <p className="mt-0.5 text-[11px] text-muted-foreground">
             Matched on{" "}
-            <span className="font-medium text-warm-900">{data.matched_on.industry}</span>
-            {data.matched_on.state_region && (
-              <> · <span className="font-medium text-warm-900">{data.matched_on.state_region}</span></>
-            )}
-          </p>
-        )}
-        {!data?.matched_on.industry && industry && (
-          <p className="text-xs text-muted-foreground">
-            Industry: <span className="font-medium text-warm-900">{industry}</span>
+            <span className="font-medium text-warm-800">{matchLabel}</span>
           </p>
         )}
       </CardHeader>
 
-      <CardContent className="pt-0">
-        {loading && <WinnerSkeleton />}
+      <CardContent className="p-0">
+        {loading && (
+          <div className="px-4 py-3">
+            <WinnerSkeleton />
+          </div>
+        )}
 
         {error && (
-          <div className="flex items-center gap-2 rounded-lg border border-dashed border-border bg-warm-50/50 p-4 text-sm text-muted-foreground">
-            <AlertCircle className="h-4 w-4 shrink-0" aria-hidden />
+          <div className="flex items-center gap-2 px-4 py-4 text-xs text-muted-foreground">
+            <AlertCircle className="h-3.5 w-3.5 shrink-0" aria-hidden />
             Award history unavailable
           </div>
         )}
 
-        {!loading && !error && data && data.winners.length === 0 && (
-          <div className="flex items-center gap-2 rounded-lg border border-dashed border-border bg-warm-50/50 p-4 text-sm text-muted-foreground">
-            <Building2 className="h-4 w-4 shrink-0" aria-hidden />
-            No award history found for this category yet.
+        {!loading && !error && data?.winners.length === 0 && (
+          <div className="flex items-center gap-2 px-4 py-4 text-xs text-muted-foreground">
+            <Building2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            No award history for this category yet.
           </div>
         )}
 
         {!loading && !error && data && data.winners.length > 0 && (
-          <ol className="space-y-2" aria-label="Past award winners">
-            {data.winners.map((winner, idx) => (
-              <li
-                key={`${winner.vendor_name}-${winner.source_portal}`}
-                className="flex items-start gap-3 rounded-lg border border-border/50 bg-warm-50/30 p-3 transition-colors hover:bg-warm-50/70"
-              >
-                <MedalIcon rank={idx + 1} />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-warm-900" title={winner.vendor_name}>
-                    {winner.vendor_name}
-                  </p>
-                  <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                    <Badge variant="default" className="text-xs">
-                      {winner.win_count} win{winner.win_count !== 1 ? "s" : ""}
-                    </Badge>
-                    {winner.avg_value && (
-                      <span className="text-xs text-muted-foreground">
+          <>
+            {/* Scrollable leaderboard — max 6 rows visible */}
+            <ol
+              className="max-h-[340px] divide-y divide-border/40 overflow-y-auto"
+              aria-label="Past award winners"
+            >
+              {data.winners.map((winner, idx) => (
+                <li
+                  key={`${winner.vendor_name}-${winner.source_portal}`}
+                  className="flex items-center gap-2.5 px-4 py-2.5 transition-colors hover:bg-warm-50/60"
+                >
+                  <RankBadge rank={idx + 1} />
+
+                  {/* Vendor name + portal */}
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className="truncate text-xs font-semibold text-warm-900 leading-snug"
+                      title={winner.vendor_name}
+                    >
+                      {winner.vendor_name}
+                    </p>
+                    <p className="mt-0.5 text-[10px] text-muted-foreground leading-none">
+                      {PORTAL_LABELS[winner.source_portal] ?? winner.source_portal}
+                      {winner.last_win_date && (
+                        <> · {winner.last_win_date.slice(0, 7)}</>
+                      )}
+                    </p>
+                  </div>
+
+                  {/* Stats — right-aligned */}
+                  <div className="shrink-0 text-right">
+                    <p className="text-xs font-semibold tabular-nums text-warm-900">
+                      {winner.win_count}
+                      <span className="ml-0.5 text-[10px] font-normal text-muted-foreground">
+                        win{winner.win_count !== 1 ? "s" : ""}
+                      </span>
+                    </p>
+                    {winner.avg_value ? (
+                      <p className="text-[10px] tabular-nums text-muted-foreground">
                         avg {formatCurrency(winner.avg_value)}
-                      </span>
-                    )}
+                      </p>
+                    ) : null}
                   </div>
-                  <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                    <span className="text-xs text-muted-foreground">
-                      {formatPortalLabel(winner.source_portal)}
-                    </span>
-                    {winner.last_win_date && (
-                      <span className="text-xs text-muted-foreground">
-                        · last {winner.last_win_date.slice(0, 7)}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ol>
+                </li>
+              ))}
+            </ol>
+
+            {/* Footer — total count */}
+            {data.total > 0 && (
+              <div className="border-t border-border/40 px-4 py-2">
+                <p className="text-[10px] text-muted-foreground">
+                  {data.total} vendor{data.total !== 1 ? "s" : ""} found in award history
+                </p>
+              </div>
+            )}
+          </>
         )}
       </CardContent>
     </Card>
