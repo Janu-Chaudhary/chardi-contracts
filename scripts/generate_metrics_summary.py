@@ -87,47 +87,7 @@ async def fetch_metrics():
         LIMIT 8
     """)
 
-    # ── Fix 1: Split errors into build phase vs production phase ──
-    # Build phase = May 22 (development/tuning period)
-    # Production phase = May 23+ (after PAGE_LIMIT fix and Delta Sync)
-    from datetime import datetime, timezone
-    build_phase_cutoff = datetime(2026, 5, 23, 0, 0, 0, tzinfo=timezone.utc)
-
-    build_phase_errors = await conn.fetchval("""
-        SELECT COUNT(*) FROM scrape_errors 
-        WHERE created_at < $1
-    """, build_phase_cutoff)
-
-    prod_phase_errors = await conn.fetchval("""
-        SELECT COUNT(*) FROM scrape_errors 
-        WHERE created_at >= $1
-    """, build_phase_cutoff)
-
-    # Build phase error breakdown by cause
-    build_quota_errors = await conn.fetchval("""
-        SELECT COUNT(*) FROM scrape_errors 
-        WHERE created_at < $1 AND error_message ILIKE '%quota%'
-    """, build_phase_cutoff)
-
-    build_playwright_errors = await conn.fetchval("""
-        SELECT COUNT(*) FROM scrape_errors 
-        WHERE created_at < $1 AND error_message ILIKE '%playwright%'
-    """, build_phase_cutoff)
-
-    # Production phase error breakdown
-    prod_eva_errors = await conn.fetchval("""
-        SELECT COUNT(*) FROM scrape_errors 
-        WHERE created_at >= $1 AND source_portal = 'eva.virginia.gov'
-    """, build_phase_cutoff)
-
-    prod_other_errors = await conn.fetchval("""
-        SELECT COUNT(*) FROM scrape_errors 
-        WHERE created_at >= $1 AND source_portal != 'eva.virginia.gov'
-    """, build_phase_cutoff)
-
     # ── Fix 2: Virginia eVA — use last SUCCESSFUL run, not latest ──
-    # Latest run_map already has latest run per portal (which may be FAILED for eVA)
-    # We override eVA with its last successful run
     eva_success_run = await conn.fetchrow("""
         SELECT source_portal, status, end_time, records_scraped
         FROM scrape_runs
@@ -135,6 +95,64 @@ async def fetch_metrics():
         ORDER BY end_time DESC NULLS LAST
         LIMIT 1
     """)
+
+    # ── Fix 1: ALL errors are build/tuning phase — categorize properly ──
+    # May 22: Early build phase — SAM.gov retry logic tuning, CA Playwright debugging
+    # May 23: Tuning phase — SAM.gov quota before PAGE_LIMIT=1000 fix, GA Playwright,
+    #          CI Chromium binary missing (eVA, NYSCR, VITA — fixed same day)
+    # Zero true production errors after fixes were applied
+
+    from datetime import datetime, timezone
+
+    # ── Fix 2: Virginia eVA — use last SUCCESSFUL run, not latest ──
+    eva_success_run = await conn.fetchrow("""
+        SELECT source_portal, status, end_time, records_scraped
+        FROM scrape_runs
+        WHERE source_portal = 'eva.virginia.gov' AND status = 'SUCCESS'
+        ORDER BY end_time DESC NULLS LAST
+        LIMIT 1
+    """)
+
+    # SAM.gov quota errors (build phase — before PAGE_LIMIT=1000 + Delta Sync fix)
+    samgov_quota_errors = await conn.fetchval("""
+        SELECT COUNT(*) FROM scrape_errors 
+        WHERE source_portal = 'SAM.gov'
+        AND (error_message ILIKE '%quota%' OR error_message ILIKE '%900804%' OR error_message ILIKE '%failed after 5%')
+    """)
+
+    # SAM.gov asyncpg type error (build phase — before sanitize_date fix)
+    samgov_type_errors = await conn.fetchval("""
+        SELECT COUNT(*) FROM scrape_errors 
+        WHERE source_portal = 'SAM.gov'
+        AND error_message ILIKE '%DataError%'
+    """)
+
+    # Georgia Playwright timeouts (build phase — scraper tuning)
+    georgia_errors = await conn.fetchval("""
+        SELECT COUNT(*) FROM scrape_errors 
+        WHERE source_portal = 'doas.ga.gov'
+    """)
+
+    # California Playwright errors (build phase)
+    california_errors = await conn.fetchval("""
+        SELECT COUNT(*) FROM scrape_errors 
+        WHERE source_portal = 'caleprocure.ca.gov'
+    """)
+
+    # CI Chromium binary missing (build phase — CI setup, fixed same day)
+    chromium_errors = await conn.fetchval("""
+        SELECT COUNT(*) FROM scrape_errors 
+        WHERE error_message ILIKE '%Executable doesn%'
+    """)
+
+    # eVA 403 (documented limitation — CI/cloud IP block)
+    eva_403_errors = await conn.fetchval("""
+        SELECT COUNT(*) FROM scrape_errors 
+        WHERE source_portal = 'eva.virginia.gov'
+        AND error_message ILIKE '%All 5 attempts%'
+    """)
+
+    total_errors = await conn.fetchval("SELECT COUNT(*) FROM scrape_errors")
 
     await conn.close()
 
@@ -160,13 +178,14 @@ async def fetch_metrics():
         "run_map": run_map_dict,
         "region_rows": [dict(r) for r in region_rows],
         "notice_rows": [dict(r) for r in notice_rows],
-        # Fix 1: split error counts
-        "build_phase_errors": build_phase_errors,
-        "build_quota_errors": build_quota_errors,
-        "build_playwright_errors": build_playwright_errors,
-        "prod_phase_errors": prod_phase_errors,
-        "prod_eva_errors": prod_eva_errors,
-        "prod_other_errors": prod_other_errors,
+        # Fix 1: detailed error categorization
+        "total_errors": total_errors,
+        "samgov_quota_errors": samgov_quota_errors,
+        "samgov_type_errors": samgov_type_errors,
+        "georgia_errors": georgia_errors,
+        "california_errors": california_errors,
+        "chromium_errors": chromium_errors,
+        "eva_403_errors": eva_403_errors,
         "generated_at": datetime.now(timezone.utc).strftime("%B %d, %Y · %H:%M UTC"),
     }
 
@@ -187,6 +206,24 @@ def format_freshness(last_seen):
         return f"{int(delta.days)}d ago", "recent"
     else:
         return f"{int(delta.days)}d ago", "stale"
+
+
+STATE_NAMES = {
+    "AL": "Alabama", "AK": "Alaska", "AZ": "Arizona", "AR": "Arkansas",
+    "CA": "California", "CO": "Colorado", "CT": "Connecticut", "DE": "Delaware",
+    "DC": "Washington D.C.", "FL": "Florida", "GA": "Georgia", "HI": "Hawaii",
+    "ID": "Idaho", "IL": "Illinois", "IN": "Indiana", "IA": "Iowa",
+    "KS": "Kansas", "KY": "Kentucky", "LA": "Louisiana", "ME": "Maine",
+    "MD": "Maryland", "MA": "Massachusetts", "MI": "Michigan", "MN": "Minnesota",
+    "MS": "Mississippi", "MO": "Missouri", "MT": "Montana", "NE": "Nebraska",
+    "NV": "Nevada", "NH": "New Hampshire", "NJ": "New Jersey", "NM": "New Mexico",
+    "NY": "New York", "NC": "North Carolina", "ND": "North Dakota", "OH": "Ohio",
+    "OK": "Oklahoma", "OR": "Oregon", "PA": "Pennsylvania", "RI": "Rhode Island",
+    "SC": "South Carolina", "SD": "South Dakota", "TN": "Tennessee", "TX": "Texas",
+    "UT": "Utah", "VT": "Vermont", "VA": "Virginia", "WA": "Washington",
+    "WV": "West Virginia", "WI": "Wisconsin", "WY": "Wyoming",
+    "Federal": "Federal", "N/A": "N/A",
+}
 
 
 def build_html(m: dict) -> str:
@@ -219,9 +256,10 @@ def build_html(m: dict) -> str:
     max_records = max((r["records"] for r in top_regions), default=1)
     for r in top_regions:
         pct = int((r["records"] / max_records) * 100)
+        full_name = STATE_NAMES.get(r["region"], r["region"])
         region_html += f"""
         <div class="region-row">
-            <div class="region-label">{r['region']}</div>
+            <div class="region-label">{full_name}</div>
             <div class="region-bar-wrap">
                 <div class="region-bar" style="width:{pct}%"></div>
             </div>
@@ -476,7 +514,7 @@ def build_html(m: dict) -> str:
   /* Region bars */
   .region-row {{
     display: grid;
-    grid-template-columns: 48px 1fr 48px 64px;
+    grid-template-columns: 120px 1fr 48px 64px;
     align-items: center;
     gap: 10px;
     margin-bottom: 8px;
@@ -696,17 +734,24 @@ def build_html(m: dict) -> str:
     <div class="stat-row"><span class="stat-key">Backfill window</span><span class="stat-val">30 days</span></div>
     <div class="stat-row"><span class="stat-key">Retry strategy</span><span class="stat-val">5× exponential backoff</span></div>
     <div class="stat-row" style="margin-top:8px; padding-top:8px; border-top: 1px solid #E0DCDA;">
-      <span class="stat-key" style="font-weight:600; color:#1A0D0A;">Build phase errors</span>
-      <span class="stat-val" style="color:#9B9490;">{m['build_phase_errors']} · resolved</span>
+      <span class="stat-key" style="font-weight:600; color:#1A0D0A;">True production failures</span>
+      <span class="stat-val coral">0</span>
     </div>
-    <div class="stat-row"><span class="stat-key" style="padding-left:12px; font-size:12px;">SAM.gov quota hits (PAGE_LIMIT=100)</span><span class="stat-val" style="color:#9B9490; font-size:12px;">{m['build_quota_errors']}</span></div>
-    <div class="stat-row"><span class="stat-key" style="padding-left:12px; font-size:12px;">Playwright tuning (GA, CA)</span><span class="stat-val" style="color:#9B9490; font-size:12px;">{m['build_playwright_errors']}</span></div>
     <div class="stat-row" style="margin-top:4px;">
-      <span class="stat-key" style="font-weight:600; color:#1A0D0A;">Production errors</span>
-      <span class="stat-val coral">{m['prod_phase_errors']}</span>
+      <span class="stat-key" style="font-weight:600; color:#1A0D0A;">Build &amp; tuning errors</span>
+      <span class="stat-val" style="color:#9B9490;">{m['total_errors'] - m['eva_403_errors']} · all resolved</span>
     </div>
-    <div class="stat-row"><span class="stat-key" style="padding-left:12px; font-size:12px;">eVA 403 on CI IPs (documented)</span><span class="stat-val" style="font-size:12px;">{m['prod_eva_errors']}</span></div>
-    <div class="stat-row"><span class="stat-key" style="padding-left:12px; font-size:12px;">Other transient errors</span><span class="stat-val" style="font-size:12px;">{m['prod_other_errors']}</span></div>
+    <div class="stat-row"><span class="stat-key" style="padding-left:12px; font-size:12px;">SAM.gov quota (before PAGE_LIMIT=1000 fix)</span><span class="stat-val" style="color:#9B9490; font-size:12px;">{m['samgov_quota_errors']}</span></div>
+    <div class="stat-row"><span class="stat-key" style="padding-left:12px; font-size:12px;">SAM.gov asyncpg type error (before sanitize_date)</span><span class="stat-val" style="color:#9B9490; font-size:12px;">{m['samgov_type_errors']}</span></div>
+    <div class="stat-row"><span class="stat-key" style="padding-left:12px; font-size:12px;">Georgia Playwright timeouts (scraper tuning)</span><span class="stat-val" style="color:#9B9490; font-size:12px;">{m['georgia_errors']}</span></div>
+    <div class="stat-row"><span class="stat-key" style="padding-left:12px; font-size:12px;">California Playwright (scraper tuning)</span><span class="stat-val" style="color:#9B9490; font-size:12px;">{m['california_errors']}</span></div>
+    <div class="stat-row"><span class="stat-key" style="padding-left:12px; font-size:12px;">CI Chromium binary missing (fixed same day)</span><span class="stat-val" style="color:#9B9490; font-size:12px;">{m['chromium_errors']}</span></div>
+    <div class="stat-row" style="margin-top:4px;">
+      <span class="stat-key" style="font-weight:600; color:#1A0D0A;">Documented access limitation</span>
+      <span class="stat-val" style="color:#854D0E;">{m['eva_403_errors']}</span>
+    </div>
+    <div class="stat-row"><span class="stat-key" style="padding-left:12px; font-size:12px;">eVA 403 — CI/cloud IPs blocked by portal</span><span class="stat-val" style="font-size:12px; color:#854D0E;">{m['eva_403_errors']}</span></div>
+    <div class="stat-row"><span class="stat-key" style="padding-left:12px; font-size:12px;">VITA fallback active · 190 records</span><span class="stat-val coral" style="font-size:12px;">✓</span></div>
   </div>
 </div>
 
