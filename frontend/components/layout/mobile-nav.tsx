@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
@@ -13,13 +14,15 @@ import {
 } from "@/components/ui/sheet";
 import { NAV_ITEMS } from "@/components/layout/nav-items";
 import { isNavActive } from "@/lib/nav-utils";
+import { navItemClass } from "@/lib/interaction";
 import { cn } from "@/lib/utils";
 
 export function MobileNav() {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open menu">
           <Menu className="h-5 w-5" />
@@ -38,7 +41,7 @@ export function MobileNav() {
               return (
                 <span
                   key={item.href}
-                  className="flex items-center gap-3 rounded-lg px-3 py-3 text-base text-muted-foreground/60"
+                  className="flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-3 text-base text-muted-foreground/60"
                 >
                   <Icon className="h-5 w-5" />
                   {item.label}
@@ -50,8 +53,10 @@ export function MobileNav() {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={() => setOpen(false)}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-3 text-base font-medium",
+                  "flex items-center gap-3 rounded-lg px-3 py-3 text-base font-medium active:bg-warm-200",
+                  navItemClass,
                   active
                     ? "bg-coral-500/15 text-warm-black"
                     : "text-warm-900 hover:bg-warm-200"
