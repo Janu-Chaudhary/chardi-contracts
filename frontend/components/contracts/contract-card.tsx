@@ -7,6 +7,7 @@ import { StatusBadge } from "@/components/contracts/status-badge";
 import type { Contract } from "@/lib/types";
 import { interactiveCardClass } from "@/lib/interaction";
 import { formatCurrency, formatDate, cn, hasCurrencyValue } from "@/lib/utils";
+import { fullStateName } from "@/lib/state-names";
 
 interface ContractCardProps {
   contract: Contract;
@@ -72,7 +73,7 @@ export function ContractCard({ contract, className }: ContractCardProps) {
           <div className="flex items-center justify-between border-t border-border pt-3 text-sm font-medium text-coral-600">
             <span className="text-muted-foreground font-normal">
               {contract.portalRegion}
-              {contract.state ? ` · ${contract.state}` : ""}
+              {contract.state ? ` · ${fullStateName(contract.state)}` : ""}
             </span>
             <span className="inline-flex items-center gap-0.5 transition-transform duration-200 ease-out group-hover:translate-x-0.5">
               View details

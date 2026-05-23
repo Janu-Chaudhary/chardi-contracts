@@ -12,6 +12,7 @@ import {
 import { StatusBadge } from "@/components/contracts/status-badge";
 import type { Contract } from "@/lib/types";
 import { cn, formatCurrency, formatDate, hasCurrencyValue } from "@/lib/utils";
+import { fullStateName } from "@/lib/state-names";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -125,7 +126,7 @@ export function ContractsTable({
               </p>
               {(contract.portalRegion || contract.state) && (
                 <p className="mt-0.5 truncate text-xs text-muted-foreground/80">
-                  {[contract.portalRegion, contract.state].filter(Boolean).join(" · ")}
+                  {[contract.portalRegion, contract.state ? fullStateName(contract.state) : null].filter(Boolean).join(" · ")}
                 </p>
               )}
             </TableCell>

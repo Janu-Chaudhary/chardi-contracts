@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { StatusBadge } from "@/components/contracts/status-badge";
 import type { Contract } from "@/lib/types";
 import { cn, formatCurrency, formatDate, hasCurrencyValue } from "@/lib/utils";
+import { stateLabel } from "@/lib/state-names";
 
 interface ContractDetailProps {
   contract: Contract;
@@ -149,7 +150,7 @@ export function ContractDetail({ contract }: ContractDetailProps) {
             <CardContent className="space-y-4 pt-0">
               <dl className="space-y-4">
                 <MetaBlock label="Region" value={contract.portalRegion} />
-                <MetaBlock label="State" value={contract.state ?? "Not specified"} />
+                <MetaBlock label="State" value={stateLabel(contract.state)} />
                 <MetaBlock label="Notice type" value={contract.noticeType ?? "Not specified"} />
                 <MetaBlock
                   label="Record ID"

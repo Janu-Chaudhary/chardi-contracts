@@ -15,6 +15,7 @@ import type {
   StateChartResponse,
 } from "@/lib/api-types";
 import { normalizePortalChart, normalizeStateChart } from "@/lib/normalize-charts";
+import { stateNameOnly } from "@/lib/state-names";
 
 type ChartTab = "portal" | "state";
 
@@ -136,7 +137,10 @@ export function DashboardCharts() {
                       label: p.label,
                       value: p.total,
                       color: p.color,
-                      sublabel: `${p.open.toLocaleString()} open · ${p.closed.toLocaleString()} closed`,
+                      sublabelParts: [
+                        { text: `${p.open.toLocaleString()} open`, variant: "open" as const },
+                        { text: `${p.closed.toLocaleString()} closed`, variant: "closed" as const },
+                      ],
                     }))}
                   />
                 ) : (
@@ -169,10 +173,13 @@ export function DashboardCharts() {
                   <HorizontalBarChart
                     aria-label="Contracts by US state"
                     items={topStates.map((s) => ({
-                      label: s.state,
+                      label: stateNameOnly(s.state),
                       value: s.total,
                       color: "var(--coral-500)",
-                      sublabel: `${s.open.toLocaleString()} open`,
+                      sublabelParts: [
+                        { text: `${s.open.toLocaleString()} open`, variant: "open" as const },
+                        ...(s.closed > 0 ? [{ text: `${s.closed.toLocaleString()} closed`, variant: "closed" as const }] : []),
+                      ],
                     }))}
                     maxItems={8}
                   />
