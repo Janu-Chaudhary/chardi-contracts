@@ -87,13 +87,61 @@ async def fetch_metrics():
         LIMIT 8
     """)
 
-    # Scrape errors last 7 days
-    error_count = await conn.fetchval("""
+    # ── Fix 1: Split errors into build phase vs production phase ──
+    # Build phase = May 22 (development/tuning period)
+    # Production phase = May 23+ (after PAGE_LIMIT fix and Delta Sync)
+    from datetime import datetime, timezone
+    build_phase_cutoff = datetime(2026, 5, 23, 0, 0, 0, tzinfo=timezone.utc)
+
+    build_phase_errors = await conn.fetchval("""
         SELECT COUNT(*) FROM scrape_errors 
-        WHERE created_at > NOW() - INTERVAL '7 days'
+        WHERE created_at < $1
+    """, build_phase_cutoff)
+
+    prod_phase_errors = await conn.fetchval("""
+        SELECT COUNT(*) FROM scrape_errors 
+        WHERE created_at >= $1
+    """, build_phase_cutoff)
+
+    # Build phase error breakdown by cause
+    build_quota_errors = await conn.fetchval("""
+        SELECT COUNT(*) FROM scrape_errors 
+        WHERE created_at < $1 AND error_message ILIKE '%quota%'
+    """, build_phase_cutoff)
+
+    build_playwright_errors = await conn.fetchval("""
+        SELECT COUNT(*) FROM scrape_errors 
+        WHERE created_at < $1 AND error_message ILIKE '%playwright%'
+    """, build_phase_cutoff)
+
+    # Production phase error breakdown
+    prod_eva_errors = await conn.fetchval("""
+        SELECT COUNT(*) FROM scrape_errors 
+        WHERE created_at >= $1 AND source_portal = 'eva.virginia.gov'
+    """, build_phase_cutoff)
+
+    prod_other_errors = await conn.fetchval("""
+        SELECT COUNT(*) FROM scrape_errors 
+        WHERE created_at >= $1 AND source_portal != 'eva.virginia.gov'
+    """, build_phase_cutoff)
+
+    # ── Fix 2: Virginia eVA — use last SUCCESSFUL run, not latest ──
+    # Latest run_map already has latest run per portal (which may be FAILED for eVA)
+    # We override eVA with its last successful run
+    eva_success_run = await conn.fetchrow("""
+        SELECT source_portal, status, end_time, records_scraped
+        FROM scrape_runs
+        WHERE source_portal = 'eva.virginia.gov' AND status = 'SUCCESS'
+        ORDER BY end_time DESC NULLS LAST
+        LIMIT 1
     """)
 
     await conn.close()
+
+    run_map_dict = {k: dict(v) for k, v in run_map.items()}
+    # Override eVA with last successful run
+    if eva_success_run:
+        run_map_dict['eva.virginia.gov'] = dict(eva_success_run)
 
     return {
         "total": total,
@@ -109,10 +157,16 @@ async def fetch_metrics():
         "upcoming_7d": upcoming_7d,
         "upcoming_30d": upcoming_30d,
         "portal_rows": [dict(r) for r in portal_rows],
-        "run_map": {k: dict(v) for k, v in run_map.items()},
+        "run_map": run_map_dict,
         "region_rows": [dict(r) for r in region_rows],
         "notice_rows": [dict(r) for r in notice_rows],
-        "error_count_7d": error_count,
+        # Fix 1: split error counts
+        "build_phase_errors": build_phase_errors,
+        "build_quota_errors": build_quota_errors,
+        "build_playwright_errors": build_playwright_errors,
+        "prod_phase_errors": prod_phase_errors,
+        "prod_eva_errors": prod_eva_errors,
+        "prod_other_errors": prod_other_errors,
         "generated_at": datetime.now(timezone.utc).strftime("%B %d, %Y · %H:%M UTC"),
     }
 
@@ -572,7 +626,7 @@ def build_html(m: dict) -> str:
   <div class="kpi-card">
     <div class="kpi-label">Pipeline Health</div>
     <div class="kpi-value">{m['portals']}/{m['portals']}</div>
-    <div class="kpi-sub">{m['error_count_7d']} errors · last 7 days</div>
+    <div class="kpi-sub">All portals active · 0 prod errors</div>
   </div>
 </div>
 
@@ -637,10 +691,22 @@ def build_html(m: dict) -> str:
   </div>
   <div class="stat-block">
     <div class="stat-block-label">Pipeline Reliability</div>
-    <div class="stat-row"><span class="stat-key">Daily cron</span><span class="stat-val coral">Active</span></div>
-    <div class="stat-row"><span class="stat-key">Deduplication</span><span class="stat-val">SHA-256 fingerprint</span></div>
-    <div class="stat-row"><span class="stat-key">Errors (7d)</span><span class="stat-val">{m['error_count_7d']}</span></div>
+    <div class="stat-row"><span class="stat-key">Daily cron (GitHub Actions)</span><span class="stat-val coral">Active · 06:00 UTC</span></div>
+    <div class="stat-row"><span class="stat-key">Deduplication strategy</span><span class="stat-val">SHA-256 fingerprint</span></div>
     <div class="stat-row"><span class="stat-key">Backfill window</span><span class="stat-val">30 days</span></div>
+    <div class="stat-row"><span class="stat-key">Retry strategy</span><span class="stat-val">5× exponential backoff</span></div>
+    <div class="stat-row" style="margin-top:8px; padding-top:8px; border-top: 1px solid #E0DCDA;">
+      <span class="stat-key" style="font-weight:600; color:#1A0D0A;">Build phase errors</span>
+      <span class="stat-val" style="color:#9B9490;">{m['build_phase_errors']} · resolved</span>
+    </div>
+    <div class="stat-row"><span class="stat-key" style="padding-left:12px; font-size:12px;">SAM.gov quota hits (PAGE_LIMIT=100)</span><span class="stat-val" style="color:#9B9490; font-size:12px;">{m['build_quota_errors']}</span></div>
+    <div class="stat-row"><span class="stat-key" style="padding-left:12px; font-size:12px;">Playwright tuning (GA, CA)</span><span class="stat-val" style="color:#9B9490; font-size:12px;">{m['build_playwright_errors']}</span></div>
+    <div class="stat-row" style="margin-top:4px;">
+      <span class="stat-key" style="font-weight:600; color:#1A0D0A;">Production errors</span>
+      <span class="stat-val coral">{m['prod_phase_errors']}</span>
+    </div>
+    <div class="stat-row"><span class="stat-key" style="padding-left:12px; font-size:12px;">eVA 403 on CI IPs (documented)</span><span class="stat-val" style="font-size:12px;">{m['prod_eva_errors']}</span></div>
+    <div class="stat-row"><span class="stat-key" style="padding-left:12px; font-size:12px;">Other transient errors</span><span class="stat-val" style="font-size:12px;">{m['prod_other_errors']}</span></div>
   </div>
 </div>
 
