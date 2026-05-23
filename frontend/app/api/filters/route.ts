@@ -78,6 +78,7 @@ export async function GET() {
       "txsmartbuy.gov": "Texas (TxSmartBuy)",
       "vita.virginia.gov": "Virginia (VITA)",
       "SAM.gov": "Federal (SAM.gov)",
+      "doas.ga.gov": "Georgia (TGM)",
     };
 
     return NextResponse.json({

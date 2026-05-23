@@ -19,6 +19,7 @@ const PORTAL_LABELS: Record<string, string> = {
   "txsmartbuy.gov": "Texas",
   "vita.virginia.gov": "Virginia (VITA)",
   "SAM.gov": "SAM.gov",
+  "doas.ga.gov": "Georgia",
 };
 
 const PORTAL_COLORS: Record<string, string> = {
@@ -28,6 +29,7 @@ const PORTAL_COLORS: Record<string, string> = {
   "txsmartbuy.gov": "#ea580c",
   "vita.virginia.gov": "#8b5cf6",
   "SAM.gov": "#1f1a17",
+  "doas.ga.gov": "#16a34a",
 };
 
 const OPPORTUNITY_LIST_SELECT = `

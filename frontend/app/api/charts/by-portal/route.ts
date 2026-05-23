@@ -11,6 +11,7 @@ const PORTAL_LABELS: Record<string, string> = {
   "txsmartbuy.gov": "Texas",
   "vita.virginia.gov": "Virginia (VITA)",
   "SAM.gov": "Federal (SAM.gov)",
+  "doas.ga.gov": "Georgia (TGM)",
 };
 
 const PORTAL_COLORS: Record<string, string> = {
@@ -20,6 +21,7 @@ const PORTAL_COLORS: Record<string, string> = {
   "txsmartbuy.gov": "#ef4444",
   "vita.virginia.gov": "#8b5cf6",
   "SAM.gov": "#6366f1",
+  "doas.ga.gov": "#16a34a",
 };
 
 export async function GET() {
