@@ -4,6 +4,15 @@
 .env.*.local
 frontend/.env.local
 
+# ── IDE / AI tool configs ─────────────────────────────────
+.cursor/
+.kiro/
+.vscode/settings.json
+.idea/
+
+# ── Project notes / AI session files ─────────────────────
+KIRO_md/
+
 # ── Python ───────────────────────────────────────────────
 __pycache__/
 *.py[cod]
@@ -32,10 +41,6 @@ debug/
 # ── OS ───────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
-
-# ── IDE ──────────────────────────────────────────────────
-.vscode/settings.json
-.idea/
 
 # ── Playwright ───────────────────────────────────────────
 playwright-report/
