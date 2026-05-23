@@ -44,6 +44,8 @@ jobs:
           cache: 'pip'
           cache-dependency-path: backend/requirements.txt
       - run: pip install -r backend/requirements.txt
+      - name: Install Playwright Chromium
+        run: python -m playwright install --with-deps chromium
       - name: Ingest New York
         run: python -m backend.workers.newyork.main
 
@@ -96,6 +98,8 @@ jobs:
           cache: 'pip'
           cache-dependency-path: backend/requirements.txt
       - run: pip install -r backend/requirements.txt
+      - name: Install Playwright Chromium
+        run: python -m playwright install --with-deps chromium
       - name: Ingest Virginia
         run: python -m backend.workers.virginia.main
 
