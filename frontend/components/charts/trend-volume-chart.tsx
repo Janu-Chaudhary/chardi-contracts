@@ -130,10 +130,10 @@ export function TrendVolumeChart({
               return (
                 <div
                   key={col.month}
-                  className="group flex min-w-0 flex-1 flex-col items-center justify-end"
+                  className="group/bar relative flex min-w-0 flex-1 flex-col items-center justify-end"
                 >
                   <div
-                    className="interactive-fast mb-1 flex w-full max-w-[3rem] cursor-default flex-col justify-end overflow-hidden rounded-t-md shadow-sm hover:opacity-90"
+                    className="interactive-fast mb-1 flex w-full max-w-[3rem] cursor-default flex-col justify-end overflow-hidden rounded-t-md shadow-sm hover:brightness-110 hover:scale-x-105 active:brightness-110 active:scale-x-105 origin-bottom"
                     style={{ height: Math.max(openH + closedH, minSeg) }}
                     title={`${formatChartMonth(col.month)}: ${col.total.toLocaleString()} total (${col.open.toLocaleString()} open, ${col.closed.toLocaleString()} closed)`}
                   >
@@ -156,6 +156,11 @@ export function TrendVolumeChart({
                       />
                     )}
                   </div>
+                  {visTotal > 0 && (
+                    <div className="pointer-events-none absolute -top-8 left-1/2 z-10 -translate-x-1/2 rounded bg-warm-black px-2 py-1 text-[10px] font-medium text-white opacity-0 shadow-md transition-opacity group-hover/bar:opacity-100 group-active/bar:opacity-100 whitespace-nowrap">
+                      {visTotal.toLocaleString()}
+                    </div>
+                  )}
                 </div>
               );
             })}

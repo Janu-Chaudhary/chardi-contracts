@@ -40,7 +40,7 @@ export function HorizontalBarChart({
             </div>
             <div className="h-2.5 overflow-hidden rounded-full bg-warm-200">
               <div
-                className="interactive-fast h-full rounded-full hover:opacity-90"
+                className="interactive-fast h-full rounded-full hover:brightness-110 hover:scale-y-110 active:brightness-110 active:scale-y-110 origin-left"
                 style={{
                   width: `${pct}%`,
                   backgroundColor: item.color ?? "var(--coral-500)",
