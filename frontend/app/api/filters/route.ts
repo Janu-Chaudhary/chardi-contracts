@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { query, VALID_US_STATES } from "@/lib/db";
+import { fullStateName } from "@/lib/state-names";
 
 export const runtime = "edge";
 
@@ -86,7 +87,7 @@ export async function GET() {
     return NextResponse.json({
       states: states.map((r) => ({
         value: r.value,
-        label: r.value,
+        label: fullStateName(r.value as string),
         count: parseInt(String(r.count)),
       })),
       portals: portals.map((r) => ({
