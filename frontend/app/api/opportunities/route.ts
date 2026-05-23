@@ -126,6 +126,14 @@ export async function GET(req: NextRequest) {
 
   try {
     // Run data + count queries in parallel
+    // Smart deadline sort: when sorting by deadline ASC (default for OPEN),
+    // put upcoming deadlines first (soonest due), push past/null to the bottom.
+    // For DESC or any other column, use standard ordering.
+    const isDeadlineAsc = sortCol === "deadline" && order === "ASC";
+    const orderClause = isDeadlineAsc
+      ? `CASE WHEN deadline >= NOW() THEN 0 ELSE 1 END ASC, deadline ASC NULLS LAST`
+      : `${sortCol} ${order} NULLS LAST`;
+
     const dataQuery = `
       SELECT
         id, source_portal, source_record_id, solicitation_number,
@@ -137,7 +145,7 @@ export async function GET(req: NextRequest) {
         status, buyer_name, buyer_type, source_url
       FROM opportunities
       ${whereClause}
-      ORDER BY ${sortCol} ${order} NULLS LAST
+      ORDER BY ${orderClause}
       LIMIT $${paramIdx} OFFSET $${paramIdx + 1}
     `;
 
