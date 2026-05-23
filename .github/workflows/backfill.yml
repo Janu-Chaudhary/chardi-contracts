@@ -12,6 +12,9 @@ on:
         required: false
         default: 'samgov'
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   backfill:
     name: Backfill ${{ github.event.inputs.portal }} (${{ github.event.inputs.days }} days)
