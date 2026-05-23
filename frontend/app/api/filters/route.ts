@@ -79,6 +79,7 @@ export async function GET() {
       "vita.virginia.gov": "Virginia (VITA)",
       "SAM.gov": "Federal (SAM.gov)",
       "doas.ga.gov": "Georgia (TGM)",
+      "bidbuy.illinois.gov": "Illinois (BidBuy)",
     };
 
     return NextResponse.json({
