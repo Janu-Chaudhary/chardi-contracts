@@ -17,8 +17,11 @@ export function AppHeader() {
         </span>
       </Link>
       <div className="ml-auto flex items-center gap-2">
-        {/* TODO: user menu / notifications */}
-        <span className="rounded-md bg-warm-200 px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+        <span className="inline-flex items-center gap-1.5 rounded-md bg-warm-200 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          </span>
           Live
         </span>
       </div>

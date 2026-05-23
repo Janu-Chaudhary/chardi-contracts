@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { Download, Search, SlidersHorizontal } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Download, FileJson, FileText, Search, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import {
   Sheet,
   SheetContent,
@@ -142,7 +143,29 @@ export function ContractsExplorer() {
     filters.postedTo,
   ].filter(Boolean).length;
 
-  const exportHref = `/api/export${filtersToExportParams({ ...filters, q: debouncedQ })}`;
+  const exportBaseHref = `/api/export${filtersToExportParams({ ...filters, q: debouncedQ })}`;
+  const exportCsvHref = exportBaseHref.includes("?")
+    ? exportBaseHref.replace("?", "?format=csv&")
+    : `${exportBaseHref}?format=csv`;
+  const exportJsonHref = exportBaseHref.includes("?")
+    ? exportBaseHref.replace("?", "?format=json&")
+    : `${exportBaseHref}?format=json`;
+
+  const [downloadOpen, setDownloadOpen] = useState(false);
+  const [downloadActive, setDownloadActive] = useState(false);
+  const downloadRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    if (!downloadOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (downloadRef.current && !downloadRef.current.contains(e.target as Node)) {
+        setDownloadOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [downloadOpen]);
 
   return (
     <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
@@ -180,11 +203,62 @@ export function ContractsExplorer() {
               />
             </div>
 
-            <Button variant="outline" size="icon" className="shrink-0" asChild>
-              <a href={exportHref} download aria-label="Export results as CSV">
+            {/* ── Download dropdown ── */}
+            <div className="relative shrink-0" ref={downloadRef}>
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label="Download contracts"
+                aria-expanded={downloadOpen}
+                aria-haspopup="menu"
+                onClick={() => {
+                  setDownloadOpen((v) => !v);
+                  setDownloadActive(true);
+                  setTimeout(() => setDownloadActive(false), 300);
+                }}
+                className={cn(
+                  "transition-colors",
+                  downloadOpen || downloadActive
+                    ? "border-coral-500 text-coral-600 ring-1 ring-coral-400/50"
+                    : "hover:border-coral-400 hover:text-coral-600"
+                )}
+              >
                 <Download className="h-4 w-4" />
-              </a>
-            </Button>
+              </Button>
+
+              {downloadOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 top-full z-50 mt-1.5 w-44 overflow-hidden rounded-lg border border-border bg-card shadow-lg"
+                >
+                  <p className="border-b border-border px-3 py-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                    Export as
+                  </p>
+                  <a
+                    href={exportCsvHref}
+                    download
+                    role="menuitem"
+                    onClick={() => setDownloadOpen(false)}
+                    className="flex items-center gap-2.5 px-3 py-2.5 text-sm text-warm-black transition-colors hover:bg-coral-500/10 hover:text-coral-700"
+                  >
+                    <FileText className="h-4 w-4 shrink-0 text-coral-500" aria-hidden />
+                    CSV
+                    <span className="ml-auto text-xs text-muted-foreground">spreadsheet</span>
+                  </a>
+                  <a
+                    href={exportJsonHref}
+                    download
+                    role="menuitem"
+                    onClick={() => setDownloadOpen(false)}
+                    className="flex items-center gap-2.5 px-3 py-2.5 text-sm text-warm-black transition-colors hover:bg-coral-500/10 hover:text-coral-700"
+                  >
+                    <FileJson className="h-4 w-4 shrink-0 text-coral-500" aria-hidden />
+                    JSON
+                    <span className="ml-auto text-xs text-muted-foreground">raw data</span>
+                  </a>
+                </div>
+              )}
+            </div>
 
             <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
               <SheetTrigger asChild>
