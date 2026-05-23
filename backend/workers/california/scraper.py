@@ -7,16 +7,11 @@ Approach:
   containing all 456+ records (not an XLS file)
 - Parse the JSON to extract event records
 
-Fields available from the JSON response:
-  tdEventId   → source_record_id
-  tdEventName → title
-  tdDepName   → buyer_name (department)
-  tdEndDate   → deadline
-  tdStatus    → status (Posted / Event Completed)
-
-Note: posted_date (Published Date) is not available in the basic search
-JSON. Advanced Search adds it but requires complex PeopleSoft AJAX
-interaction that is unreliable in headless mode. Skipped intentionally.
+v2 reliability fixes:
+  - Retry wrapper (3 attempts, 10s backoff)
+  - Fallback selectors for download button (not just hardcoded PeopleSoft ID)
+  - Increased page.goto timeout to 120s
+  - Clear error message listing all tried selectors on failure
 """
 
 from __future__ import annotations
@@ -28,7 +23,23 @@ from typing import Any
 from playwright.async_api import async_playwright
 
 TARGET_URL = "https://caleprocure.ca.gov/pages/Events-BS3/event-search.aspx"
+
+# Primary button ID (PeopleSoft-generated — may change between deployments)
 DOWNLOAD_BTN_ID = "RESP_INQA_HD_VW_GR$hexcel$0"
+
+# Fallback selectors tried in priority order
+DOWNLOAD_BTN_FALLBACKS = [
+    f"[id='{DOWNLOAD_BTN_ID}']",
+    "img[alt*='Excel']",
+    "img[alt*='Download']",
+    "img[alt*='Export']",
+    "a[title*='Download']",
+    "button:has-text('Download')",
+    "a:has-text('Download')",
+]
+
+MAX_RETRIES = 3
+RETRY_BACKOFF_SECONDS = 10
 
 
 def _get_text(children: dict, *field_names: str) -> str:
@@ -47,11 +58,7 @@ def _get_text(children: dict, *field_names: str) -> str:
 
 
 def parse_records_from_json(json_text: str) -> list[dict[str, str]]:
-    """
-    Parse PeopleSoft JSON response and extract all tblBodyTr event records.
-
-    Each record contains: Event ID, Event Name, Department, End Date, Status.
-    """
+    """Parse PeopleSoft JSON response and extract all tblBodyTr event records."""
     try:
         data = json.loads(json_text)
     except json.JSONDecodeError:
@@ -90,11 +97,8 @@ def parse_records_from_json(json_text: str) -> list[dict[str, str]]:
     return records
 
 
-async def fetch_california_events() -> list[dict[str, str]]:
-    """
-    Navigate caleprocure.ca.gov, click Download, capture the JSON response,
-    and return a list of event record dicts.
-    """
+async def _scrape_once() -> list[dict[str, str]]:
+    """Single attempt at the full scrape flow."""
     captured_json: list[str] = []
 
     async with async_playwright() as p:
@@ -122,25 +126,64 @@ async def fetch_california_events() -> list[dict[str, str]]:
         page.on("response", on_response)
 
         try:
-            resp = await page.goto(TARGET_URL, wait_until="networkidle", timeout=90000)
+            resp = await page.goto(TARGET_URL, wait_until="networkidle", timeout=120000)
             if resp and resp.status >= 400:
                 raise RuntimeError(
                     f"caleprocure.ca.gov returned HTTP {resp.status}"
                 )
 
-            # Click the Download button — triggers JSON response with all records
-            dl_btn = page.locator(f"[id='{DOWNLOAD_BTN_ID}']").first
-            await dl_btn.wait_for(state="visible", timeout=30000)
+            # Try each fallback selector in priority order
+            dl_btn = None
+            used_selector = None
+            for selector in DOWNLOAD_BTN_FALLBACKS:
+                candidate = page.locator(selector).first
+                try:
+                    await candidate.wait_for(state="visible", timeout=5000)
+                    if await candidate.count() > 0:
+                        dl_btn = candidate
+                        used_selector = selector
+                        break
+                except Exception:
+                    continue
+
+            if dl_btn is None:
+                raise RuntimeError(
+                    "Download button not found on caleprocure.ca.gov. "
+                    f"Tried: {DOWNLOAD_BTN_FALLBACKS}"
+                )
+
+            print(f"[California] Found download button via: {used_selector}")
             await dl_btn.click()
-            await page.wait_for_load_state("networkidle", timeout=30000)
+            await page.wait_for_load_state("networkidle", timeout=60000)
 
         finally:
             await browser.close()
 
-    # Parse records from the largest JSON response
     for json_text in sorted(captured_json, key=len, reverse=True):
         records = parse_records_from_json(json_text)
         if records:
             return records
 
     return []
+
+
+async def fetch_california_events() -> list[dict[str, str]]:
+    """Fetch California caleprocure events with retry wrapper (3 attempts, 10s backoff)."""
+    last_exc: Exception | None = None
+
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            print(f"[California] Attempt {attempt}/{MAX_RETRIES}...")
+            result = await _scrape_once()
+            print(f"[California] Success on attempt {attempt} — {len(result)} events")
+            return result
+        except Exception as exc:
+            last_exc = exc
+            print(f"[California] Attempt {attempt} failed: {exc}")
+            if attempt < MAX_RETRIES:
+                print(f"[California] Retrying in {RETRY_BACKOFF_SECONDS}s...")
+                await asyncio.sleep(RETRY_BACKOFF_SECONDS)
+
+    raise RuntimeError(
+        f"California scraper failed after {MAX_RETRIES} attempts"
+    ) from last_exc
