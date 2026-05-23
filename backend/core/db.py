@@ -152,3 +152,58 @@ async def upsert_opportunities(rows: list[tuple[Any, ...]]) -> int:
     async with pool.acquire() as conn:
         await conn.executemany(OPPORTUNITY_UPSERT_SQL, rows)
     return len(rows)
+
+
+REFRESH_AWARD_WINNERS_SQL = """
+INSERT INTO award_winners (
+    vendor_name, industry, state_region, source_portal,
+    win_count, total_value, avg_value, last_win_date
+)
+SELECT
+    COALESCE(
+        NULLIF(TRIM(raw_payload->>'vendor_name'), ''),
+        NULLIF(TRIM(split_part(description, ' — ', 1)), '')
+    )                                           AS vendor_name,
+    COALESCE(NULLIF(TRIM(industry), ''), 'Unknown') AS industry,
+    state_region,
+    source_portal,
+    COUNT(*)                                    AS win_count,
+    SUM(value_numeric)                          AS total_value,
+    ROUND(AVG(value_numeric)::numeric, 2)       AS avg_value,
+    MAX(posted_date)                            AS last_win_date
+FROM opportunities
+WHERE status IN ('AWARDED', 'CLOSED')
+  AND source_portal = $1
+  AND COALESCE(
+        NULLIF(TRIM(raw_payload->>'vendor_name'), ''),
+        NULLIF(TRIM(split_part(description, ' — ', 1)), '')
+      ) IS NOT NULL
+GROUP BY 1, 2, 3, 4
+ON CONFLICT (vendor_name, industry, COALESCE(state_region, ''), source_portal)
+DO UPDATE SET
+    win_count     = EXCLUDED.win_count,
+    total_value   = EXCLUDED.total_value,
+    avg_value     = EXCLUDED.avg_value,
+    last_win_date = EXCLUDED.last_win_date,
+    updated_at    = CURRENT_TIMESTAMP;
+"""
+
+
+async def refresh_award_winners(source_portal: str) -> int:
+    """
+    Refresh award_winners for a specific source_portal after ingestion.
+
+    Called by each worker after upsert_opportunities completes.
+    Uses an upsert — never blocks reads, safe to call concurrently.
+    Returns the number of vendor-industry rows refreshed.
+    """
+    pool = await create_pool()
+    async with pool.acquire() as conn:
+        result = await conn.execute(REFRESH_AWARD_WINNERS_SQL, source_portal)
+    # asyncpg returns "INSERT 0 N" — parse N
+    try:
+        count = int(result.split()[-1])
+    except (ValueError, IndexError):
+        count = 0
+    print(f"[award_winners] Refreshed {count} rows for {source_portal}")
+    return count

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { StatusBadge } from "@/components/contracts/status-badge";
+import { WinnersSidebar } from "@/components/contracts/winners-sidebar";
 import type { Contract } from "@/lib/types";
 import { cn, formatCurrency, formatDate, hasCurrencyValue } from "@/lib/utils";
 import { stateLabel } from "@/lib/state-names";
@@ -160,6 +161,12 @@ export function ContractDetail({ contract }: ContractDetailProps) {
               </dl>
             </CardContent>
           </Card>
+
+          {/* Award enrichment — lazy loaded, zero blocking */}
+          <WinnersSidebar
+            opportunityId={contract.id}
+            industry={contract.industry}
+          />
 
           <Card>
             <CardHeader>
