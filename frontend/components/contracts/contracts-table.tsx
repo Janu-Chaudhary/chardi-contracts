@@ -100,7 +100,7 @@ export function ContractsTable({
             />
           </TableHead>
           <TableHead>
-            <SortHeader label="Due" column="deadline" sortKey={sortKey} sortOrder={sortOrder} onSort={onSort} />
+            <SortHeader label="Deadline" column="deadline" sortKey={sortKey} sortOrder={sortOrder} onSort={onSort} />
           </TableHead>
           <TableHead className="whitespace-nowrap">Status</TableHead>
         </TableRow>

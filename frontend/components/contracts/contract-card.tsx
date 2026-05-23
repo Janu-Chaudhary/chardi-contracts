@@ -60,7 +60,7 @@ export function ContractCard({ contract, className }: ContractCardProps) {
             <div>
               <dt className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Calendar className="h-3 w-3" aria-hidden />
-                Due date
+                Deadline
               </dt>
               <dd className="mt-0.5 tabular-nums">{formatDate(contract.deadline)}</dd>
             </div>

@@ -1,16 +1,23 @@
 # Portal Coverage
 
-## Summary (as of May 23, 2026)
+## Summary (May 23, 2026)
 
-| Portal | Label | Region | Records | Method | Status |
-|---|---|---|---|---|---|
-| api.sam.gov | `SAM.gov` | Federal | 1,879 | REST API v2 | ✅ Production-ready |
-| nyscr.ny.gov | `nyscr.ny.gov` | State (NY) | 999 | Async HTTP scraper | ✅ Done |
-| caleprocure.ca.gov | `caleprocure.ca.gov` | State (CA) | 456 | Playwright + Excel | ✅ Done |
-| mvendor.cgieva.com | `eva.virginia.gov` | State (VA) | 385 | Async HTTP scraper | ✅ Done |
-| txsmartbuy.gov | `txsmartbuy.gov` | State (TX) | 297 | Playwright + CSV | ✅ Done |
-| vita.virginia.gov | `vita.virginia.gov` | State (VA) | 190 | Async HTTP scraper | ✅ Done |
-| **Total** | | | **4,206** | | |
+| Portal | Label | Region | Records | Open | Method | Status |
+|---|---|---|---|---|---|---|
+| api.sam.gov | Federal (SAM.gov) | Federal | 6,186 | 6,186 | REST API v2 | ✅ Production |
+| data.cityofnewyork.us | NYC (Open Data) | City (NY) | 1,018 | 0 | Socrata API | ✅ Done |
+| nyscr.ny.gov | New York (NYSCR) | State (NY) | 999 | 953 | Async HTTP | ✅ Done |
+| data.cityofchicago.org | Chicago (Data Portal) | City (IL) | 659 | 654 | Socrata API | ✅ Done |
+| caleprocure.ca.gov | California | State (CA) | 467 | 467 | Playwright + Excel | ✅ Done |
+| eva.virginia.gov | Virginia (eVA) | State (VA) | 385 | 383 | Async HTTP | ✅ Done* |
+| txsmartbuy.gov | Texas | State (TX) | 298 | 298 | Playwright + CSV | ✅ Done |
+| doas.ga.gov | Georgia (TGM) | State (GA) | 201 | 201 | Playwright | ✅ Done |
+| vita.virginia.gov | Virginia (VITA) | State (VA) | 190 | 190 | Async HTTP | ✅ Done |
+| bidbuy.illinois.gov | Illinois (BidBuy) | State (IL) | 186 | 180 | Playwright | ✅ Done |
+| dms.myflorida.com | Florida (DMS) | State (FL) | 146 | 76 | Async HTTP | ✅ Done |
+| **Total** | | | **10,735** | **9,588** | | |
+
+*eVA: portal returns 403 to CI/cloud IPs. Graceful skip with fast-fail probe. VITA still runs.
 
 ---
 
@@ -19,33 +26,40 @@
 - **API:** Opportunities Public API v2 (`/prod/opportunities/v2/search`)
 - **Auth:** API key via `SAM_GOV_API_KEY` env var
 - **Worker:** `backend/workers/samgov/`
-  - `fetcher.py` — async pagination, semaphore (3), exponential backoff + jitter
+  - `fetcher.py` — sequential pagination, exponential backoff + jitter, `QuotaExhaustedError`
   - `mapper.py` — `map_notice_to_tuple()`, `sanitize_date()`
-  - `main.py` — per-day window partitioning, `asyncio.gather`, scrape_runs observability
-- **CLI:** `python -m backend.workers.samgov.main --days N`
-- **Rate limit:** Daily quota. Resets at 00:00 UTC. Worker detects `nextAccessTime` in 429 response and raises fatal error.
-- **Concurrency:** 3 simultaneous requests (reduced from 5 after rate-limit testing)
-- **Retries:** 5 attempts, backoff outside semaphore
+  - `main.py` — per-day window loop, `PARTIAL_SUCCESS` on quota hit
+  - `backfill_historical.py` — one-shot backfill with resume support
+- **Rate limit:** Daily quota. Resets 00:00 UTC. Worker detects `nextAccessTime` in 429 and stops cleanly.
+- **Concurrency:** Sequential (changed from concurrent to maximize quota usage)
+- **Retries:** 6 attempts, exponential backoff outside semaphore
 
 ### Field mapping
 
 | DB Field | SAM.gov field | Coverage |
 |---|---|---|
-| `source_record_id` | `noticeId` | ✅ 100% |
+| `source_record_id` | `noticeId` | 100% |
 | `solicitation_number` | `solicitationNumber` | ~60% |
-| `title` | `title` | ✅ 100% |
-| `notice_type` | `type` | ✅ 100% |
-| `posted_date` | `postedDate` | ✅ 100% |
+| `title` | `title` | 100% |
+| `notice_type` | `type` | 100% |
+| `posted_date` | `postedDate` | 100% |
 | `deadline` | `responseDeadLine` | ~80% |
 | `state_region` | `placeOfPerformance.state.code` | ~70% |
-| `industry` | `naicsCode` | ~75% |
 | `naics_code` | `naicsCode` | ~75% |
-| `status` | `active == "Yes"` → OPEN | ✅ 100% |
-| `buyer_name` | `fullParentPathName` (first segment) | ✅ 100% |
-| `buyer_type` | `organizationType` | ✅ 100% |
-| `source_url` | `uiLink` or constructed | ✅ 100% |
-| `documents` | `resourceLinks[]` | ~40% |
-| `value_numeric` | Not in search API | ❌ 0% |
+| `status` | `active == "Yes"` → OPEN | 100% |
+| `buyer_name` | `fullParentPathName` (first segment) | 100% |
+| `source_url` | `uiLink` or constructed | 100% |
+| `value_numeric` | Not in search API | 0% |
+
+---
+
+## City — NYC (Open Data / Socrata)
+
+- **Portal:** data.cityofnewyork.us
+- **Worker:** `backend/workers/nyc_contract_awards/`
+- **Method:** Socrata API (`/resource/...`)
+- **Records:** 1,018
+- **State code:** `NY`
 
 ---
 
@@ -59,51 +73,25 @@
 
 ---
 
+## City — Chicago (Data Portal / Socrata)
+
+- **Portal:** data.cityofchicago.org
+- **Worker:** `backend/workers/chicago/`
+- **Method:** Socrata API
+- **Records:** 659
+- **State code:** `IL`
+
+---
+
 ## State — California (Cal eProcure)
 
 - **Portal:** caleprocure.ca.gov
 - **Worker:** `backend/workers/california/`
   - `scraper.py` — Playwright headless, advanced search, Excel download intercept
   - `mapper.py` — Pandas DataFrame → upsert tuples
-  - `main.py` — orchestration + scrape_runs
 - **Method:** Playwright + Excel intercept
-- **Records:** 456
+- **Records:** 467
 - **State code:** `CA`
-- **CLI:** `python -m backend.workers.california.main`
-
----
-
-## State — Texas (TxSmartBuy)
-
-- **Portal:** txsmartbuy.gov
-- **Worker:** `backend/workers/texas/`
-  - `scraper.py` — Playwright headless, CSV export intercept
-  - `mapper.py` — Pandas DataFrame → upsert tuples
-  - `main.py` — orchestration + scrape_runs
-- **Method:** Playwright + CSV export
-- **Records:** 297 (Term + TXMAS contracts)
-- **State code:** `TX`
-- **CLI:** `python -m backend.workers.texas.main`
-
-### Field coverage
-
-| DB Field | Coverage | Notes |
-|---|---|---|
-| `id` | ✅ 100% | SHA-256(portal + Contract ID) |
-| `source_record_id` | ✅ 100% | Contract column |
-| `solicitation_number` | 29% | FED column (TXMAS only) |
-| `title` | ✅ 100% | Description column |
-| `notice_type` | ✅ 100% | Term / TXMAS |
-| `posted_date` | ✅ 100% | Start Date |
-| `deadline` | ✅ 100% | End Date |
-| `state_region` | ✅ 100% | Hardcoded `TX` |
-| `industry` | ✅ 100% | First NIGP code |
-| `status` | ✅ 100% | Derived from End Date vs today |
-| `buyer_name` | ✅ 100% | Contract Group |
-| `source_url` | ✅ 100% | Constructed from Contract ID |
-| `naics_code` | ❌ 0% | NIGP ≠ NAICS, not in CSV |
-| `value_numeric` | ❌ 0% | Not published in CSV |
-| `documents` | ❌ 0% | Not in CSV |
 
 ---
 
@@ -111,8 +99,30 @@
 
 - **Portal:** mvendor.cgieva.com (eVA)
 - **Worker:** `backend/workers/virginia/eva_scraper.py` + `eva_mapper.py`
+- **Method:** Playwright + Solr API (browser session required)
 - **Records:** 385
 - **State code:** `VA`
+- **Limitation:** Portal returns 403 to GitHub Actions IPs. Fast-fail HTTP probe added. VITA runs regardless.
+
+---
+
+## State — Texas (TxSmartBuy)
+
+- **Portal:** txsmartbuy.gov
+- **Worker:** `backend/workers/texas/`
+- **Method:** Playwright + CSV export intercept
+- **Records:** 298
+- **State code:** `TX`
+
+---
+
+## State — Georgia (Team Georgia Marketplace)
+
+- **Portal:** doas.ga.gov
+- **Worker:** `backend/workers/georgia/`
+- **Method:** Playwright
+- **Records:** 201
+- **State code:** `GA`
 
 ---
 
@@ -120,20 +130,39 @@
 
 - **Portal:** vita.virginia.gov
 - **Worker:** `backend/workers/virginia/vita_scraper.py` + `vita_mapper.py`
+- **Method:** Async HTTP
 - **Records:** 190
 - **State code:** `VA`
 
 ---
 
-## Portals documented but not yet scraped
+## State — Illinois (BidBuy)
+
+- **Portal:** bidbuy.illinois.gov
+- **Worker:** `backend/workers/illinois/`
+- **Method:** Playwright
+- **Records:** 186
+- **State code:** `IL`
+
+---
+
+## State — Florida (DMS)
+
+- **Portal:** dms.myflorida.com
+- **Worker:** `backend/workers/florida/`
+- **Method:** Async HTTP
+- **Records:** 146
+- **State code:** `FL`
+- **Note:** Primarily historical/framework contracts. "- EXPIRED" suffix stripped from titles.
+
+---
+
+## Portals documented but not scraped
 
 | Portal | Reason |
 |---|---|
-| Florida (myfloridamarketplace.com) | Requires vendor registration |
-| Illinois (bidbuy.illinois.gov) | Requires registration |
-| Pennsylvania (emarketplace.state.pa.us) | Requires registration |
-| Ohio (procure.ohio.gov) | Requires registration |
-| Georgia (doas.ga.gov) | Requires registration |
-| North Carolina (ips.nc.gov) | Requires registration |
+| Pennsylvania (emarketplace.state.pa.us) | Requires vendor registration |
+| Ohio (procure.ohio.gov) | Requires vendor registration |
+| North Carolina (ips.nc.gov) | Requires vendor registration |
 
-These are documented as limitations per the brief's ground rules: "Don't bypass logins, paywalls, or auth walls. Document them as limitations."
+Per brief ground rules: "Don't bypass logins, paywalls, or auth walls. Document them as limitations."

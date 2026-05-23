@@ -21,25 +21,26 @@ cd frontend && npm run dev
 
 ## Segment 1 — Live dashboard (5 min)
 
-**Open the Overview page.**
+**Open https://chardi-contracts.vercel.app**
 
 Point out:
-- KPI cards: **4,206 total contracts**, 4,159 open, 1,879 federal, 2,327 state
-- "6 active portals · 53 states" in the subtitle
-- Analytics tabs: By portal → By state → Trend
-  - By portal: SAM.gov leads at 1,879, then NY (999), CA (456), VA (575), TX (297)
-  - By state: NY top state, VA second, CA third
-  - Trend: spike in May 2026 as scrapers ran
+- KPI cards: **10,735 total contracts**, 9,588 open, 6,186 federal, 4,549 state+city
+- "11 active portals" in the subtitle
+- Analytics tabs: By portal → By state
+  - By portal: SAM.gov leads at 6,186, then NYC (1,018), NY State (999), Chicago (659), CA (467)
+  - By state: Federal top, then New York (2,017), Illinois (845), Virginia (575), California (467)
+- Trend chart: spike in Apr/May 2026 as SAM.gov backfill ran
 
 **Switch to Contracts page.**
 
+- Default view: OPEN contracts, soonest deadline first (not stale expired data)
 - Search "cloud" → shows federal IT contracts
-- Filter by State → select CA → 456 California contracts
-- Filter by Status → OPEN → narrows results
-- Set Deadline range → June 2026 → 1,352 contracts due in June
+- Filter by State → select CA → 467 California contracts
+- Set Deadline range → June 2026 → contracts due next month
 - Click a contract → detail page with source URL, buyer, documents, timestamps
 - Click "View source" → opens original portal page
-- Export button → downloads CSV with current filters applied
+- Download button → dropdown with CSV and JSON options
+- Both respect all active filters
 
 ---
 

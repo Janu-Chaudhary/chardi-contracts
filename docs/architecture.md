@@ -2,28 +2,34 @@
 
 ## Overview
 
-Chardi Contracts is a full-stack government procurement intelligence platform. Python async workers scrape 6 portals (1 federal, 5 state) and normalize everything into a single Neon PostgreSQL schema. A Next.js 16 dashboard reads the same database directly via the Neon serverless driver and exposes 8 Edge API routes for browse, filter, search, charts, and export.
+Chardi Contracts is a full-stack government procurement intelligence platform. Python async workers scrape 11 portals (1 federal, 8 state, 2 city) and normalize everything into a single Neon PostgreSQL schema. A Next.js 16 dashboard reads the same database directly via the Neon serverless driver and exposes 9 Edge API routes for browse, filter, search, charts, and export.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     Python Workers                          │
-│  SAM.gov · California · Texas · New York · Virginia (×2)   │
-│  aiohttp / Playwright → mapper → asyncpg upsert            │
-└────────────────────────┬────────────────────────────────────┘
-                         │ ON CONFLICT upsert
+┌─────────────────────────────────────────────────────────────────────┐
+│                        Python Workers (11 portals)                  │
+│  SAM.gov · NY · NYC · CA · Chicago · TX · VA(×2) · GA · IL · FL   │
+│  aiohttp / Playwright → mapper → asyncpg upsert                    │
+└────────────────────────┬────────────────────────────────────────────┘
+                         │ ON CONFLICT upsert (deterministic SHA-256 IDs)
                          ▼
-┌─────────────────────────────────────────────────────────────┐
-│              Neon PostgreSQL (serverless)                   │
-│  opportunities · scrape_runs · scrape_errors               │
-└────────────────────────┬────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│              Neon PostgreSQL (serverless)                           │
+│  opportunities (10,735 rows) · scrape_runs · scrape_errors         │
+└────────────────────────┬────────────────────────────────────────────┘
                          │ @neondatabase/serverless
                          ▼
-┌─────────────────────────────────────────────────────────────┐
-│              Next.js 16 (App Router, Edge runtime)         │
-│  /api/opportunities · /api/stats · /api/filters            │
-│  /api/charts/* · /api/export                               │
-│  RSC pages: Overview · Contracts · Contract detail         │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│              Next.js 16 (App Router, Edge runtime)                 │
+│  /api/opportunities · /api/stats · /api/filters                    │
+│  /api/charts/* · /api/export?format=csv|json                       │
+│  RSC pages: Overview · Contracts · Trends · Contract detail        │
+└─────────────────────────────────────────────────────────────────────┘
+                         ▲
+                         │ GitHub Actions cron (06:00 UTC daily)
+┌─────────────────────────────────────────────────────────────────────┐
+│  .github/workflows/daily-ingest-all.yml                            │
+│  11 parallel jobs · continue-on-error per job                      │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -34,11 +40,16 @@ Chardi Contracts is a full-stack government procurement intelligence platform. P
 
 | Worker | Portal | Method | Records |
 |---|---|---|---|
-| `backend/workers/samgov/` | SAM.gov (Federal) | REST API v2 + asyncpg | 1,879 |
-| `backend/workers/california/` | Cal eProcure | Playwright + Excel intercept | 456 |
-| `backend/workers/texas/` | TxSmartBuy | Playwright + CSV export | 297 |
-| `backend/workers/newyork/` | NYSCR | Async HTTP scraper | 999 |
-| `backend/workers/virginia/` | eVA + VITA | Async HTTP scrapers | 575 |
+| `backend/workers/samgov/` | SAM.gov (Federal) | REST API v2, sequential | 6,186 |
+| `backend/workers/newyork/` | NYSCR (NY State) | Async HTTP | 999 |
+| `backend/workers/nyc_contract_awards/` | NYC Open Data | Socrata API | 1,018 |
+| `backend/workers/chicago/` | Chicago Data Portal | Socrata API | 659 |
+| `backend/workers/california/` | Cal eProcure | Playwright + Excel | 467 |
+| `backend/workers/virginia/` | eVA + VITA | Async HTTP / Playwright | 575 |
+| `backend/workers/texas/` | TxSmartBuy | Playwright + CSV | 298 |
+| `backend/workers/georgia/` | Team Georgia Marketplace | Playwright | 201 |
+| `backend/workers/illinois/` | BidBuy | Playwright | 186 |
+| `backend/workers/florida/` | Florida DMS | Async HTTP | 146 |
 
 All workers share:
 - `backend/core/db.py` — asyncpg pool, `upsert_opportunities`, scrape_runs helpers
