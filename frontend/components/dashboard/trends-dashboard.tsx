@@ -86,7 +86,7 @@ export function TrendsDashboard({
             </p>
           </div>
           <div
-            className="inline-flex rounded-lg border border-border bg-card p-1 shadow-sm"
+            className="inline-flex w-fit self-start rounded-lg border border-border bg-card p-1 shadow-sm"
             role="group"
             aria-label="Time range"
           >

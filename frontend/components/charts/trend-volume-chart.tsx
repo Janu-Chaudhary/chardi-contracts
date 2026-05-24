@@ -279,21 +279,29 @@ export function TrendVolumeChart({
         </div>
       </div>
 
-      {/* X-axis labels */}
-      <div className="mt-2 flex justify-between gap-1 pl-[3.25rem] sm:pl-14">
+      {/* X-axis labels — rotated vertically so full "Nov '25" fits at any width */}
+      <div className="mt-1 flex justify-between gap-1 pl-[3.25rem] sm:pl-14">
         {safe.map((col) => (
           <span
             key={`${col.month}-label`}
             className={cn(
-              "min-w-0 flex-1 text-center text-[10px] transition-colors sm:text-xs",
+              "flex min-w-0 flex-1 items-end justify-center overflow-hidden transition-colors",
               tooltip?.col.month === col.month
                 ? "font-medium text-warm-black"
                 : "text-muted-foreground"
             )}
+            style={{ height: "3rem" }}
           >
-            {/* Mobile: first letter only. Desktop: full "Nov '25" */}
-            <span className="sm:hidden">{formatChartMonth(col.month).charAt(0)}</span>
-            <span className="hidden sm:inline">{formatChartMonth(col.month)}</span>
+            <span
+              className="text-[10px] leading-none sm:text-xs"
+              style={{
+                writingMode: "vertical-rl",
+                transform: "rotate(180deg)",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {formatChartMonth(col.month)}
+            </span>
           </span>
         ))}
       </div>
