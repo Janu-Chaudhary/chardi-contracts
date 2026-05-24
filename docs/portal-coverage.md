@@ -1,10 +1,14 @@
 # Portal Coverage
 
-## Summary (May 23, 2026)
+## Summary (May 24, 2026)
 
 | Portal | Label | Region | Records | Open | Method | Status |
 |---|---|---|---|---|---|---|
 | api.sam.gov | Federal (SAM.gov) | Federal | 6,186 | 6,186 | REST API v2 | ✅ Production |
+| data.oregon.gov | Oregon (OregonBuys) | State (OR) | 109,119 | 0 | Socrata API | ✅ Done |
+| datacatalog.cookcountyil.gov | Cook County IL | County (IL) | 5,236 | 2,300 | Socrata API | ✅ Done |
+| data.montgomerycountymd.gov | Montgomery County MD | County (MD) | 2,394 | 2,394 | Socrata API | ✅ Done |
+| data.houstontx.gov | Houston TX | City (TX) | 2,310 | 11 | CKAN + XLSX | ✅ Done |
 | data.cityofnewyork.us | NYC (Open Data) | City (NY) | 1,018 | 0 | Socrata API | ✅ Done |
 | nyscr.ny.gov | New York (NYSCR) | State (NY) | 999 | 953 | Async HTTP | ✅ Done |
 | data.cityofchicago.org | Chicago (Data Portal) | City (IL) | 659 | 654 | Socrata API | ✅ Done |
@@ -15,7 +19,7 @@
 | vita.virginia.gov | Virginia (VITA) | State (VA) | 190 | 190 | Async HTTP | ✅ Done |
 | bidbuy.illinois.gov | Illinois (BidBuy) | State (IL) | 186 | 180 | Playwright | ✅ Done |
 | dms.myflorida.com | Florida (DMS) | State (FL) | 146 | 76 | Async HTTP | ✅ Done |
-| **Total** | | | **10,735** | **9,588** | | |
+| **Total** | | | **129,794** | **14,293** | | |
 
 *eVA: portal returns 403 to CI/cloud IPs. Graceful skip with fast-fail probe. VITA still runs.
 
@@ -166,3 +170,47 @@
 | North Carolina (ips.nc.gov) | Requires vendor registration |
 
 Per brief ground rules: "Don't bypass logins, paywalls, or auth walls. Document them as limitations."
+
+---
+
+## State — Oregon (OregonBuys)
+
+- **Portal:** data.oregon.gov
+- **Worker:** `backend/workers/oregon/`
+- **Method:** Socrata API (`/resource/qyug-f2km.json`)
+- **Records:** 109,119 (all AWARDED status)
+- **State code:** `OR`
+- **Purpose:** Award history corpus for "Who has won similar?" enrichment feature
+- **Industries:** Supplies, Trade Services, Personal Services, ORS 190, A and E, Public Improvement, Ordinary Construction
+
+---
+
+## County — Cook County IL
+
+- **Portal:** datacatalog.cookcountyil.gov
+- **Worker:** `backend/workers/cook_county/`
+- **Method:** Socrata API (`/resource/qh8j-6k63.json`)
+- **Records:** 5,236 (2,300 OPEN, 2,936 CLOSED)
+- **State code:** `IL`
+- **Note:** Full history — CLOSED records serve as award history corpus for IL county contracts
+
+---
+
+## City — Houston TX
+
+- **Portal:** data.houstontx.gov
+- **Worker:** `backend/workers/houston/`
+- **Method:** CKAN package_show API → XLSX download → pandas read
+- **Records:** 2,310 (11 OPEN, 2,299 CLOSED)
+- **State code:** `TX`
+- **Note:** Downloads full XLSX via CKAN API, falls back to hardcoded direct URL
+
+---
+
+## County — Montgomery County MD
+
+- **Portal:** data.montgomerycountymd.gov
+- **Worker:** `backend/workers/montgomery_county/`
+- **Method:** Socrata API
+- **Records:** 2,394 (all OPEN)
+- **State code:** `MD`
