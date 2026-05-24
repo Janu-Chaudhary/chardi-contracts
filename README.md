@@ -12,6 +12,21 @@ Government procurement intelligence across federal, state, and city portals — 
 
 ---
 
+## Metrics at a Glance
+
+> 129,794 opportunities · 15 portals · 14,293 open · 18,212 award-vendor combinations · updated daily
+
+![Metrics Summary](docs/screenshots/metrics_summary.png)
+
+<details>
+<summary>Full metrics breakdown →</summary>
+
+See [`docs/metrics-summary.md`](docs/metrics-summary.md) for per-portal record counts, award enrichment corpus details, data quality coverage, pipeline health, and frontend performance benchmarks.
+
+</details>
+
+---
+
 ## Coverage
 
 | Portal | Records | Open | Awarded/Closed | Region | Method |
@@ -41,29 +56,29 @@ Government procurement intelligence across federal, state, and city portals — 
 ┌──────────────────────────────────────────────────────────────────────┐
 │                    Python Workers (15 portals)                       │
 │  SAM.gov · Oregon · Cook County · Montgomery County · Houston        │
-│  NYC · NY · Chicago · California · Virginia(×2) · TX · GA · IL · FL │
-│  aiohttp / Playwright / CKAN → mapper → asyncpg upsert              │
+│  NYC · NY · Chicago · California · Virginia(×2) · TX · GA · IL · FL  │
+│  aiohttp / Playwright / CKAN → mapper → asyncpg upsert               │
 └─────────────────────────┬────────────────────────────────────────────┘
                           │ ON CONFLICT upsert (SHA-256 deterministic IDs)
                           ▼
 ┌──────────────────────────────────────────────────────────────────────┐
 │                  Neon PostgreSQL (serverless)                        │
-│  opportunities (129,794 rows) · scrape_runs · scrape_errors         │
-│  award_winners (18,212 rows) — pre-aggregated enrichment table      │
+│  opportunities (129,794 rows) · scrape_runs · scrape_errors          │
+│  award_winners (18,212 rows) — pre-aggregated enrichment table       │
 └─────────────────────────┬────────────────────────────────────────────┘
                           │ @neondatabase/serverless
                           ▼
 ┌──────────────────────────────────────────────────────────────────────┐
-│              Next.js 16 (App Router, Edge runtime)                  │
-│  /api/opportunities · /api/stats · /api/filters                     │
-│  /api/charts/* · /api/export · /api/opportunities/[id]/winners      │
-│  RSC pages: Overview · Contracts · Trends · Contract detail         │
+│              Next.js 16 (App Router, Edge runtime)                   │
+│  /api/opportunities · /api/stats · /api/filters                      │
+│  /api/charts/* · /api/export · /api/opportunities/[id]/winners       │
+│  RSC pages: Overview · Contracts · Trends · Contract detail          │
 └──────────────────────────────────────────────────────────────────────┘
                           ▲
                           │ GitHub Actions cron (06:00 UTC daily)
 ┌──────────────────────────────────────────────────────────────────────┐
-│  .github/workflows/daily-ingest-all.yml                             │
-│  14 parallel jobs · continue-on-error per job · smoke test verify   │
+│  .github/workflows/daily-ingest-all.yml                              │
+│  14 parallel jobs · continue-on-error per job · smoke test verify    │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 

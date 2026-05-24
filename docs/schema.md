@@ -30,7 +30,7 @@ The unified contract record. One row per unique opportunity across all portals.
 | `source_portal` | TEXT | e.g. `SAM.gov`, `nyscr.ny.gov`, `caleprocure.ca.gov` |
 | `source_record_id` | TEXT | Portal's own ID (noticeId, contract number, etc.) |
 | `solicitation_number` | TEXT | Solicitation/RFP number if available |
-| `portal_region` | TEXT | `Federal` or `State` |
+| `portal_region` | TEXT | `Federal`, `State`, `County`, or `City` |
 | `title` | TEXT | Opportunity title (required) |
 | `description` | TEXT | Full text or URL to description |
 | `notice_type` | TEXT | e.g. `Solicitation`, `Award`, `Term`, `General` |
@@ -39,7 +39,7 @@ The unified contract record. One row per unique opportunity across all portals.
 | `state_region` | TEXT | 2-letter US state code (e.g. `CA`, `TX`, `NY`) |
 | `industry` | TEXT | NAICS code or NIGP category description |
 | `naics_code` | TEXT | NAICS code (SAM.gov only currently) |
-| `value_numeric` | NUMERIC | Contract value (NULL for most portals — not published) |
+| `value_numeric` | NUMERIC | Contract value. **89% overall coverage** — 100% for Oregon, NYC, Chicago; 94% for Cook County; 0% for SAM.gov, state portals (not published) |
 | `value_min` | NUMERIC | Minimum value range |
 | `value_max` | NUMERIC | Maximum value range |
 | `currency` | TEXT | ISO 4217 code — always `USD` |
@@ -79,6 +79,27 @@ Dead-letter log for per-window or per-record failures.
 | `error_message` | TEXT | Exception message or HTTP status |
 | `raw_payload` | JSONB | `{posted_from, posted_to, traceback}` |
 | `created_at` | TIMESTAMPTZ | |
+
+### `award_winners`
+
+Pre-aggregated vendor win history. Powers the "Who has won similar?" enrichment feature.
+Refreshed automatically after each worker upsert via `db.refresh_award_winners(source_portal)`.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | SERIAL PK | |
+| `vendor_name` | TEXT | Winning vendor name |
+| `industry` | TEXT | Industry or NAICS category |
+| `state_region` | TEXT | 2-letter state code |
+| `source_portal` | TEXT | Source portal |
+| `win_count` | INT | Number of wins |
+| `total_value` | NUMERIC | Sum of contract values |
+| `avg_value` | NUMERIC | Average contract value |
+| `last_win_date` | TIMESTAMPTZ | Most recent win date |
+| `updated_at` | TIMESTAMPTZ | Refreshed after each ingest |
+
+**Unique index:** `(vendor_name, industry, COALESCE(state_region,''), source_portal)` — safe to upsert concurrently.
+**Current size:** 18,212 rows · 115,455 total wins across all portals.
 
 ---
 
