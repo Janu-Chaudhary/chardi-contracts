@@ -160,14 +160,14 @@ export function WinnersSidebar({ opportunityId, industry }: WinnersSidebarProps)
                   <RankBadge rank={idx + 1} />
 
                   {/* Vendor name + portal */}
-                  <div className="min-w-0 flex-1">
+                  <div className="min-w-0 flex-1 overflow-hidden">
                     <p
                       className="truncate text-xs font-semibold text-warm-900 leading-snug"
                       title={winner.vendor_name}
                     >
                       {winner.vendor_name}
                     </p>
-                    <p className="mt-0.5 text-[10px] text-muted-foreground leading-none">
+                    <p className="mt-0.5 text-[10px] text-muted-foreground leading-none truncate">
                       {PORTAL_LABELS[winner.source_portal] ?? winner.source_portal}
                       {winner.last_win_date && (
                         <> · {winner.last_win_date.slice(0, 7)}</>
@@ -176,15 +176,15 @@ export function WinnersSidebar({ opportunityId, industry }: WinnersSidebarProps)
                   </div>
 
                   {/* Stats — right-aligned */}
-                  <div className="shrink-0 text-right">
-                    <p className="text-xs font-semibold tabular-nums text-warm-900">
+                  <div className="shrink-0 text-right pl-2">
+                    <p className="text-xs font-semibold tabular-nums text-warm-900 whitespace-nowrap">
                       {winner.win_count}
                       <span className="ml-0.5 text-[10px] font-normal text-muted-foreground">
                         win{winner.win_count !== 1 ? "s" : ""}
                       </span>
                     </p>
                     {winner.avg_value ? (
-                      <p className="text-[10px] tabular-nums text-muted-foreground">
+                      <p className="text-[10px] tabular-nums text-muted-foreground whitespace-nowrap">
                         avg {formatCurrency(winner.avg_value)}
                       </p>
                     ) : null}
