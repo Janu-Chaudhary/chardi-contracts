@@ -18,15 +18,19 @@ MERMAID_CODE = """flowchart TD
     subgraph SOURCES["  Data Sources  "]
         direction TB
         S1["SAM.gov · Federal API v2"]
-        S2["Cal eProcure · Playwright + Excel"]
-        S3["TxSmartBuy · Playwright + CSV"]
-        S4["NYSCR · Async HTTP"]
-        S5["NYC Open Data · Socrata API"]
-        S6["Chicago Data Portal · Socrata API"]
-        S7["Virginia eVA + VITA · Async HTTP"]
-        S8["Georgia TGM · Playwright"]
-        S9["Illinois BidBuy · Playwright"]
-        S10["Florida DMS · Async HTTP"]
+        S2["Oregon OregonBuys · Socrata API"]
+        S3["Cook County IL · Socrata API"]
+        S4["Montgomery County MD · Socrata API"]
+        S5["Houston TX · CKAN + XLSX"]
+        S6["Cal eProcure · Playwright + Excel"]
+        S7["TxSmartBuy · Playwright + CSV"]
+        S8["NYSCR · Async HTTP"]
+        S9["NYC Open Data · Socrata API"]
+        S10["Chicago Data Portal · Socrata API"]
+        S11["Virginia eVA + VITA · Async HTTP"]
+        S12["Georgia TGM · Playwright"]
+        S13["Illinois BidBuy · Playwright"]
+        S14["Florida DMS · Async HTTP"]
     end
 
     subgraph WORKERS["  Python Workers  ·  backend/workers/  "]
@@ -37,36 +41,40 @@ MERMAID_CODE = """flowchart TD
 
     subgraph CORE["  Shared Core  ·  backend/core/  "]
         FP["fingerprint.py · SHA-256 deterministic ID"]
-        DB["db.py · asyncpg pool · upsert SQL"]
+        DB["db.py · asyncpg pool · upsert SQL · award refresh"]
     end
 
     subgraph PG["  Neon PostgreSQL  "]
-        T1[("opportunities · 10,735 records")]
-        T2[("scrape_runs · lifecycle log")]
-        T3[("scrape_errors · dead-letter log")]
+        T1[("opportunities · 129,794 records")]
+        T2[("award_winners · 18,212 rows")]
+        T3[("scrape_runs · lifecycle log")]
+        T4[("scrape_errors · dead-letter log")]
     end
 
     subgraph CRON["  GitHub Actions · daily 06:00 UTC  "]
-        GH["11 parallel jobs + smoke test"]
+        GH["14 parallel jobs + smoke test"]
     end
 
     subgraph API["  Next.js Edge API  ·  /api/  "]
         A1["/stats · /opportunities · /filters"]
         A2["/charts/* · /export"]
+        A3["/opportunities/id/winners"]
     end
 
     subgraph UI["  Next.js Dashboard · Vercel  "]
         U1["Overview · KPIs"]
         U2["Contracts Explorer · search · filter · sort"]
         U3["Trends · charts · deadlines"]
+        U4["Contract Detail · Who has won similar?"]
     end
 
     SOURCES --> WORKERS
     WORKERS --> CORE
     FP --> DB
-    DB --> T1 & T2 & T3
+    DB --> T1 & T2 & T3 & T4
     CRON --> WORKERS
     T1 --> API
+    T2 --> A3
     API --> UI"""
 
 

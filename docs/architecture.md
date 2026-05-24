@@ -7,28 +7,28 @@ Chardi Contracts is a full-stack government procurement intelligence platform. P
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                        Python Workers (11 portals)                  │
-│  SAM.gov · NY · NYC · CA · Chicago · TX · VA(×2) · GA · IL · FL   │
-│  aiohttp / Playwright → mapper → asyncpg upsert                    │
+│  SAM.gov · NY · NYC · CA · Chicago · TX · VA(×2) · GA · IL · FL     │
+│  aiohttp / Playwright → mapper → asyncpg upsert                     │
 └────────────────────────┬────────────────────────────────────────────┘
                          │ ON CONFLICT upsert (deterministic SHA-256 IDs)
                          ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │              Neon PostgreSQL (serverless)                           │
-│  opportunities (10,735 rows) · scrape_runs · scrape_errors         │
+│  opportunities (10,735 rows) · scrape_runs · scrape_errors          │
 └────────────────────────┬────────────────────────────────────────────┘
                          │ @neondatabase/serverless
                          ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│              Next.js 16 (App Router, Edge runtime)                 │
-│  /api/opportunities · /api/stats · /api/filters                    │
-│  /api/charts/* · /api/export?format=csv|json                       │
-│  RSC pages: Overview · Contracts · Trends · Contract detail        │
+│              Next.js 16 (App Router, Edge runtime)                  │
+│  /api/opportunities · /api/stats · /api/filters                     │
+│  /api/charts/* · /api/export?format=csv|json                        │
+│  RSC pages: Overview · Contracts · Trends · Contract detail         │
 └─────────────────────────────────────────────────────────────────────┘
                          ▲
                          │ GitHub Actions cron (06:00 UTC daily)
 ┌─────────────────────────────────────────────────────────────────────┐
-│  .github/workflows/daily-ingest-all.yml                            │
-│  11 parallel jobs · continue-on-error per job                      │
+│  .github/workflows/daily-ingest-all.yml                             │
+│  11 parallel jobs · continue-on-error per job                       │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 

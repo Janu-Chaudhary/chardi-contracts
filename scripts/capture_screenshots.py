@@ -60,6 +60,7 @@ def run():
         page.wait_for_load_state("networkidle")
         time.sleep(2)
         # Try clicking first contract row/card
+        detail_url = None
         try:
             first_link = page.locator("table tbody tr td a").first
             if first_link.count() == 0:
@@ -73,6 +74,36 @@ def run():
                 print("  ⚠  Could not find detail link — skipping detail screenshot")
         except Exception as e:
             print(f"  ⚠  Detail page skip: {e}")
+
+        # 9. "Who has won similar?" — contract detail with winners sidebar
+        # Use a Cook County contract which has good award history match
+        WINNERS_CONTRACT_ID = "53af40de3b945b99c56bc922bfa8dc072ab367ac7e4331c4ccaf7725b622a2bc"
+        winners_url = f"{BASE_URL}/contracts/{WINNERS_CONTRACT_ID}"
+        page.goto(winners_url, wait_until="domcontentloaded")
+        page.wait_for_load_state("networkidle")
+        time.sleep(4)  # wait for lazy-loaded winners sidebar to fetch
+        wait_and_screenshot(page, OUT_DIR / "09_contract_detail_winners.png", wait_ms=1000)
+
+        # 10. Winners sidebar close-up — scroll to it and screenshot just that card
+        try:
+            page.goto(winners_url, wait_until="domcontentloaded")
+            page.wait_for_load_state("networkidle")
+            time.sleep(4)
+            # Scroll winners card into view
+            winners_card = page.locator("text=Who has won similar?").first
+            winners_card.scroll_into_view_if_needed()
+            time.sleep(1)
+            # Screenshot the parent card element
+            card_el = page.locator("text=Who has won similar?").locator("xpath=ancestor::div[contains(@class,'rounded')]").first
+            if card_el.count() > 0:
+                card_el.screenshot(path=str(OUT_DIR / "10_winners_sidebar_closeup.png"))
+                print(f"  ✓  10_winners_sidebar_closeup.png")
+            else:
+                # fallback: scroll and full screenshot
+                page.screenshot(path=str(OUT_DIR / "10_winners_sidebar_closeup.png"), full_page=False)
+                print(f"  ✓  10_winners_sidebar_closeup.png (fallback)")
+        except Exception as e:
+            print(f"  ⚠  Winners closeup skip: {e}")
 
         ctx.close()
 
@@ -96,6 +127,19 @@ def run():
         # 8. Contracts mobile (card view)
         page_m.goto(f"{BASE_URL}/contracts", wait_until="domcontentloaded")
         wait_and_screenshot(page_m, OUT_DIR / "08_mobile_contracts_cards.png")
+
+        # 11. Mobile contract detail with winners sidebar
+        WINNERS_CONTRACT_ID = "53af40de3b945b99c56bc922bfa8dc072ab367ac7e4331c4ccaf7725b622a2bc"
+        page_m.goto(f"{BASE_URL}/contracts/{WINNERS_CONTRACT_ID}", wait_until="domcontentloaded")
+        page_m.wait_for_load_state("networkidle")
+        time.sleep(4)
+        # Scroll to winners section
+        try:
+            page_m.locator("text=Who has won similar?").first.scroll_into_view_if_needed()
+            time.sleep(1)
+        except Exception:
+            pass
+        wait_and_screenshot(page_m, OUT_DIR / "11_mobile_winners_sidebar.png", wait_ms=500)
 
         ctx_mobile.close()
         browser.close()

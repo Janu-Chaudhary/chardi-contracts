@@ -105,7 +105,9 @@ Full-text search, filter by portal, state, status, and deadline range. Sortable 
 
 Each contract detail page shows **"Who has won similar?"** — a leaderboard of vendors who have won similar contracts before, matched by industry and state. Pre-computed from 109k+ awarded records. Zero latency — single indexed lookup.
 
-![Contract Detail](docs/screenshots/06_contract_detail.png)
+![Contract Detail with Winners](docs/screenshots/09_contract_detail_winners.png)
+
+![Winners Sidebar Close-up](docs/screenshots/10_winners_sidebar_closeup.png)
 
 ### Trends & Charts
 
@@ -118,9 +120,11 @@ Monthly posting volume (open vs. closed), upcoming deadlines. Both charts are fu
 Designed mobile-first. Cards on small screens, table on desktop. Filter drawer, sticky header, thumb-friendly controls. All sections stack cleanly — no overflow or text clipping.
 
 <p>
-  <img src="docs/screenshots/07_mobile_dashboard.png" width="320" alt="Mobile Dashboard" />
+  <img src="docs/screenshots/07_mobile_dashboard.png" width="280" alt="Mobile Dashboard" />
   &nbsp;&nbsp;
-  <img src="docs/screenshots/08_mobile_contracts_cards.png" width="320" alt="Mobile Cards" />
+  <img src="docs/screenshots/08_mobile_contracts_cards.png" width="280" alt="Mobile Cards" />
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/11_mobile_winners_sidebar.png" width="280" alt="Mobile Winners Sidebar" />
 </p>
 
 ---
@@ -235,7 +239,7 @@ All routes are Next.js Edge API routes deployed on Vercel.
 
 This project was built using a deliberate **Human-Orchestrated Heterogeneous AI Pipeline** — one person acting as the routing layer between specialized models, each assigned to what it does best.
 
-See [`docs/ai-usage.md`](docs/ai-usage.md) and [`KIRO_md/AI_USAGE_CONTEXT.md`](KIRO_md/AI_USAGE_CONTEXT.md) for the full breakdown.
+See [`docs/ai-usage.md`](docs/ai-usage.md) and [`docs/AI_USAGE_CONTEXT.md`](docs/AI_USAGE_CONTEXT.md) for the full breakdown.
 
 ### AI Tool Roles
 
@@ -361,10 +365,11 @@ CHARDI/
 | File | Contents |
 |------|----------|
 | [`docs/architecture.md`](docs/architecture.md) | System design, data flow, design principles |
+| [`docs/architecture-diagram.md`](docs/architecture-diagram.md) | Mermaid source for architecture diagram |
 | [`docs/schema.md`](docs/schema.md) | Full schema, upsert behavior, parameter order |
 | [`docs/portal-coverage.md`](docs/portal-coverage.md) | Per-portal field mapping and coverage |
 | [`docs/metrics-summary.md`](docs/metrics-summary.md) | Live data metrics |
 | [`docs/ai-usage.md`](docs/ai-usage.md) | Full AI tool breakdown and key prompts |
+| [`docs/AI_USAGE_CONTEXT.md`](docs/AI_USAGE_CONTEXT.md) | Master AI collaboration documentation |
+| [`docs/AI_LEVERAGE.md`](docs/AI_LEVERAGE.md) | AI leverage notes, system prompts, Gemini/Perplexity/Manus AI inputs |
 | [`docs/demo-script.md`](docs/demo-script.md) | Demo walkthrough |
-| [`KIRO_md/AI_USAGE_CONTEXT.md`](KIRO_md/AI_USAGE_CONTEXT.md) | Master AI collaboration documentation |
-| [`KIRO_md/AI_LEVERAGE.md`](KIRO_md/AI_LEVERAGE.md) | AI leverage notes, system prompts, Gemini/Perplexity/Manus AI inputs |

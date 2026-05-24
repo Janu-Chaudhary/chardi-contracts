@@ -36,7 +36,7 @@ MERMAID_CODE = """erDiagram
         text source_portal "Portal name"
         text source_record_id "Portal native ID"
         text solicitation_number "RFP number if available"
-        text portal_region "Federal · State"
+        text portal_region "Federal · State · County · City"
         text title "Opportunity title — required"
         text description "Full text or URL"
         text notice_type "Solicitation · Award · Term · General"
@@ -57,7 +57,21 @@ MERMAID_CODE = """erDiagram
         timestamptz updated_at "Trigger-managed"
     }
 
+    award_winners {
+        int id PK "SERIAL"
+        text vendor_name "Winning vendor name"
+        text industry "Industry or NAICS category"
+        text state_region "2-letter state code"
+        text source_portal "Source portal"
+        int win_count "Number of wins"
+        numeric total_value "Sum of contract values"
+        numeric avg_value "Average contract value"
+        timestamptz last_win_date "Most recent win date"
+        timestamptz updated_at "Refreshed after each ingest"
+    }
+
     scrape_runs ||--o{ scrape_errors : "has"
+    opportunities ||--o{ award_winners : "aggregated into"
 """
 
 
