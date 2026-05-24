@@ -86,7 +86,7 @@ export function TrendsDashboard({
             </p>
           </div>
           <div
-            className="inline-flex rounded-lg bg-warm-200 p-1"
+            className="inline-flex rounded-lg border border-border bg-card p-1 shadow-sm"
             role="group"
             aria-label="Time range"
           >
@@ -99,8 +99,8 @@ export function TrendsDashboard({
                 className={cn(
                   "interactive min-h-[40px] rounded-md px-4 py-2 text-sm font-medium",
                   months === n
-                    ? "bg-card text-warm-black shadow-sm"
-                    : "text-muted-foreground hover:bg-warm-200/50 hover:text-warm-900",
+                    ? "bg-warm-200 text-warm-black shadow-sm"
+                    : "text-muted-foreground hover:bg-warm-100 hover:text-warm-900",
                   loading && "opacity-60"
                 )}
               >
@@ -114,7 +114,7 @@ export function TrendsDashboard({
       {error && <ErrorState message={error} onRetry={() => loadTrend(months)} />}
 
       <section aria-label="Trend summary" className="grid gap-3 sm:grid-cols-3">
-        <Card className="interactive hover-lift active:scale-[0.98]">
+        <Card className="interactive-card">
           <CardContent className="p-5">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Posted in range
@@ -125,7 +125,7 @@ export function TrendsDashboard({
             <p className="mt-1 text-xs text-muted-foreground">Last {months} months</p>
           </CardContent>
         </Card>
-        <Card className="interactive hover-lift active:scale-[0.98]">
+        <Card className="interactive-card">
           <CardContent className="p-5">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Peak month
@@ -140,7 +140,7 @@ export function TrendsDashboard({
             </p>
           </CardContent>
         </Card>
-        <Card className="interactive hover-lift active:scale-[0.98]">
+        <Card className="interactive-card">
           <CardContent className="p-5">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Upcoming deadlines
@@ -148,7 +148,7 @@ export function TrendsDashboard({
             <p className="mt-2 font-stat-md">
               {loading ? "—" : summary.upcomingTotal.toLocaleString()}
             </p>
-            <p className="mt-1 text-xs text-muted-foreground">Next 12 months</p>
+            <p className="mt-1 text-xs text-muted-foreground">Next {months} months</p>
           </CardContent>
         </Card>
       </section>
@@ -164,7 +164,7 @@ export function TrendsDashboard({
 
       {!loading && !error && (
         <div className="space-y-6">
-          <Card className="interactive hover:shadow-md">
+          <Card className="interactive-card">
             <CardHeader>
               <CardTitle className="font-display text-lg">Posting volume over time</CardTitle>
               <p className="text-sm text-muted-foreground">
@@ -192,7 +192,7 @@ export function TrendsDashboard({
             </CardContent>
           </Card>
 
-          <Card className="interactive hover:shadow-md">
+          <Card className="interactive-card">
             <CardHeader>
               <CardTitle className="font-display text-lg">Upcoming deadlines</CardTitle>
               <p className="text-sm text-muted-foreground">

@@ -94,7 +94,7 @@ export function ContractDetail({ contract }: ContractDetailProps) {
           { label: "Posted",   value: formatDate(contract.postedDate), icon: Calendar },
           { label: "Portal",   value: contract.portal },
         ].map((item) => (
-          <Card key={item.label} className="overflow-hidden">
+          <Card key={item.label} className="interactive-card overflow-hidden">
             <CardContent className="p-3 sm:p-4">
               <MetaBlock
                 label={item.label}
@@ -116,7 +116,7 @@ export function ContractDetail({ contract }: ContractDetailProps) {
         <div className="w-full min-w-0 space-y-4 lg:col-span-2">
 
           {/* Description */}
-          <Card className="w-full overflow-hidden">
+          <Card className="interactive-card w-full overflow-hidden">
             <CardHeader className="px-4 pb-2 pt-4">
               <CardTitle className="font-display text-base">Description</CardTitle>
             </CardHeader>
@@ -129,7 +129,7 @@ export function ContractDetail({ contract }: ContractDetailProps) {
           </Card>
 
           {/* Award & vendor */}
-          <Card className="w-full overflow-hidden">
+          <Card className="interactive-card w-full overflow-hidden">
             <CardHeader className="px-4 pb-2 pt-4">
               <CardTitle className="font-display text-base">Award &amp; vendor</CardTitle>
             </CardHeader>
@@ -144,7 +144,7 @@ export function ContractDetail({ contract }: ContractDetailProps) {
           </Card>
 
           {/* Attachments */}
-          <Card className="w-full overflow-hidden">
+          <Card className="interactive-card w-full overflow-hidden">
             <CardHeader className="px-4 pb-2 pt-4">
               <CardTitle className="font-display text-base">Attachments</CardTitle>
             </CardHeader>
@@ -174,7 +174,7 @@ export function ContractDetail({ contract }: ContractDetailProps) {
         <div className="mt-4 w-full min-w-0 space-y-4 lg:mt-0">
 
           {/* Metadata */}
-          <Card className="w-full overflow-hidden">
+          <Card className="interactive-card w-full overflow-hidden">
             <CardHeader className="px-4 pb-2 pt-4">
               <CardTitle className="font-display text-base">Metadata</CardTitle>
             </CardHeader>
@@ -199,7 +199,7 @@ export function ContractDetail({ contract }: ContractDetailProps) {
           />
 
           {/* Activity */}
-          <Card className="w-full overflow-hidden">
+          <Card className="interactive-card w-full overflow-hidden">
             <CardHeader className="px-4 pb-2 pt-4">
               <CardTitle className="font-display text-base">Activity</CardTitle>
             </CardHeader>

@@ -107,7 +107,7 @@ export function ContractsTable({
       </TableHeader>
       <TableBody>
         {contracts.map((contract) => (
-          <TableRow key={contract.id} className="group cursor-pointer">
+          <TableRow key={contract.id} className="interactive-row group cursor-pointer">
             <TableCell className="max-w-0">
               <Link
                 href={`/contracts/${contract.id}`}

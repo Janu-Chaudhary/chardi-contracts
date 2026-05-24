@@ -285,13 +285,15 @@ export function TrendVolumeChart({
           <span
             key={`${col.month}-label`}
             className={cn(
-              "min-w-0 flex-1 truncate text-center text-[10px] transition-colors sm:text-xs",
+              "min-w-0 flex-1 text-center text-[10px] transition-colors sm:text-xs",
               tooltip?.col.month === col.month
                 ? "font-medium text-warm-black"
                 : "text-muted-foreground"
             )}
           >
-            {formatChartMonth(col.month)}
+            {/* Mobile: first letter only. Desktop: full "Nov '25" */}
+            <span className="sm:hidden">{formatChartMonth(col.month).charAt(0)}</span>
+            <span className="hidden sm:inline">{formatChartMonth(col.month)}</span>
           </span>
         ))}
       </div>

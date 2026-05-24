@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
       ORDER BY DATE_TRUNC('month', posted_date) ASC
     `);
 
-    // Also get deadline trend (upcoming deadlines by month)
+    // Also get deadline trend (upcoming deadlines by month — same range as posted)
     const deadlineRows = await query(`
       SELECT
         TO_CHAR(DATE_TRUNC('month', deadline), 'YYYY-MM') as month,
@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
       FROM opportunities
       WHERE deadline IS NOT NULL
         AND deadline >= NOW()
-        AND deadline <= NOW() + INTERVAL '12 months'
+        AND deadline <= NOW() + INTERVAL '${months} months'
         AND deadline <= '2030-01-01'::timestamptz
       GROUP BY DATE_TRUNC('month', deadline)
       ORDER BY DATE_TRUNC('month', deadline) ASC

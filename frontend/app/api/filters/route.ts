@@ -73,18 +73,22 @@ export async function GET() {
 
     // Portal display labels
     const portalLabels: Record<string, string> = {
-      "nyscr.ny.gov":          "New York (NYSCR)",
-      "caleprocure.ca.gov":    "California (CaleProcure)",
-      "eva.virginia.gov":      "Virginia (eVA)",
-      "txsmartbuy.gov":        "Texas (TxSmartBuy)",
-      "vita.virginia.gov":     "Virginia (VITA)",
-      "SAM.gov":               "Federal (SAM.gov)",
-      "doas.ga.gov":           "Georgia (TGM)",
-      "bidbuy.illinois.gov":   "Illinois (BidBuy)",
-      "dms.myflorida.com":     "Florida (DMS)",
-      "data.cityofnewyork.us": "NYC (Open Data)",
-      "data.cityofchicago.org":"Chicago (Data Portal)",
-      "nyc_contract_awards":   "NYC Contract Awards",
+      "nyscr.ny.gov":                      "New York (NYSCR)",
+      "caleprocure.ca.gov":                "California (CaleProcure)",
+      "eva.virginia.gov":                  "Virginia (eVA)",
+      "txsmartbuy.gov":                    "Texas (TxSmartBuy)",
+      "vita.virginia.gov":                 "Virginia (VITA)",
+      "SAM.gov":                           "Federal (SAM.gov)",
+      "doas.ga.gov":                       "Georgia (TGM)",
+      "bidbuy.illinois.gov":               "Illinois (BidBuy)",
+      "dms.myflorida.com":                 "Florida (DMS)",
+      "data.cityofnewyork.us":             "NYC (Open Data)",
+      "data.cityofchicago.org":            "Chicago (Data Portal)",
+      "nyc_contract_awards":               "NYC Contract Awards",
+      "data.oregon.gov":                   "Oregon (Data Portal)",
+      "datacatalog.cookcountyil.gov":      "Cook County IL",
+      "data.houstontx.gov":                "Houston TX",
+      "data.montgomerycountymd.gov":       "Montgomery County MD",
     };
 
     return NextResponse.json({
