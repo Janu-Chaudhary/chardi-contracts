@@ -102,6 +102,21 @@
   --shadow-sm: var(--shadow-sm);
 }
 
+/* ─── Premium scrollbar — thin, warm-toned, no OS chrome ─── */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--warm-300);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--warm-300) 70%, var(--warm-900));
+}
 @layer base {
   * {
     @apply border-border;

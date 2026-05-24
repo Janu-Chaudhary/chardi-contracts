@@ -20,6 +20,7 @@ interface TrendVolumeChartProps {
 interface TooltipState {
   col: TrendVolumeColumn;
   x: number;   // px from left of chart area
+  y: number;   // px from bottom of chart area (bar top)
   side: "left" | "right";
 }
 
@@ -47,8 +48,9 @@ export function TrendVolumeChart({
       const chartRect = chartEl.getBoundingClientRect();
       const barRect = e.currentTarget.getBoundingClientRect();
       const barCenterX = barRect.left + barRect.width / 2 - chartRect.left;
+      const barTopY = chartRect.bottom - barRect.top; // distance from chart bottom to bar top
       const side: "left" | "right" = barCenterX > chartRect.width / 2 ? "right" : "left";
-      setTooltip({ col, x: barCenterX, side });
+      setTooltip({ col, x: barCenterX, y: barTopY, side });
     },
     []
   );
@@ -195,16 +197,19 @@ export function TrendVolumeChart({
             })}
           </div>
 
-          {/* ── Tooltip ── */}
+          {/* ── Tooltip — anchored to bar top ── */}
           {tooltip && (
             <div
               className={cn(
-                "pointer-events-none absolute bottom-full z-20 mb-2 w-44 rounded-lg border border-border bg-card px-3 py-2.5 shadow-lg",
+                "pointer-events-none absolute z-20 mb-2 w-44 rounded-lg border border-border bg-card px-3 py-2.5 shadow-lg",
                 tooltip.side === "right"
                   ? "-translate-x-full"
                   : "translate-x-0"
               )}
-              style={{ left: tooltip.x }}
+              style={{
+                left: tooltip.x,
+                bottom: tooltip.y + 8,
+              }}
               role="tooltip"
             >
               {/* Month header */}
