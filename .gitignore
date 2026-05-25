@@ -45,3 +45,6 @@ Thumbs.db
 # ── Playwright ───────────────────────────────────────────
 playwright-report/
 test-results/
+/scripts
+
+
