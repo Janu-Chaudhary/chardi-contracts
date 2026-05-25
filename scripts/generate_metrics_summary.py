@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 import time
 
-DATABASE_URL = "postgresql://neondb_owner:npg_EXmyU3GA7eod@ep-bold-shadow-aq6yu9ac.c-8.us-east-1.aws.neon.tech/neondb?sslmode=require"
+DATABASE_URL = ""
 OUT_PATH = Path(__file__).resolve().parent.parent / "docs" / "screenshots" / "metrics_summary.png"
 OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
 
